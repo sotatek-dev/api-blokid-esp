@@ -14,7 +14,7 @@ import { TaskManagerService } from './task-manager.service';
 export class TaskManagerController {
   constructor(private readonly taskManagerService: TaskManagerService) {}
 
-  @Post('trigger/backup-language')
+  @Post('trigger/backup')
   @SwaggerApiDocument({
     response: {
       type: TriggerBackupDatabaseResponseDto,
