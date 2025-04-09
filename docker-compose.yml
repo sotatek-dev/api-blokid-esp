@@ -1,0 +1,30 @@
+# development docker-compose file
+# In other environments, you use the docker-compose.deployment.yml file
+services:
+  api:
+    container_name: api-blok
+    image: blokid-image
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - blokid-network
+
+  database:
+    image: mysql:8.0.24
+    container_name: blokid-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    networks:
+      - blokid-network
+    volumes:
+      - ./prisma/backups:/prisma/backups
+
+networks:
+  blokid-network:
+    driver: bridge

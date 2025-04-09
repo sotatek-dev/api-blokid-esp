@@ -1,0 +1,24 @@
+services:
+  api:
+    container_name: api-blokid
+    image: blokid-image
+    ports:
+      - "3000:3000"
+    networks:
+      - blokid-network
+    volumes:
+      - ./logs:/api-blokid/logs
+      - ./database-backups:/api-blokid/prisma/backups
+
+  rabbitmq:
+    image: rabbitmq:alpine
+    container_name: blokid-rabbitmq
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management plugin port
+    networks:
+      - blokid-network
+
+networks:
+  blokid-network:
+    driver: bridge
