@@ -12,8 +12,6 @@ services:
     volumes:
       - ./logs:/api-blokid/logs
       - ./database-backups:/api-blokid/prisma/backups
-    depends_on:
-      - database
     networks:
       - blokid-network
 
