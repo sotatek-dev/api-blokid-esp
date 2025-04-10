@@ -1,14 +1,20 @@
-pre-deploy:
-	docker container prune -f; \
-	docker images -q | tail -n +5 | xargs docker rmi; \
-	[ -f sofc-image.tar ] && rm sofc-image.tar; \
-	echo "Pre-deploy done!"
+build-image:
+	docker compose build api \
+		--build-arg gitUserName="$(gitUserName)" \
+		--build-arg gitUserEmail="$(gitUserEmail)" \
+		--build-arg gitBranch="$(gitBranch)" \
+		--build-arg gitCommitHash="$(gitCommitHash)" \
+		--build-arg gitCommitMessage="$(gitCommitMessage)" \
+		--build-arg isCommitted="$(isCommitted)" \
+		--build-arg deployTime="$(deployTime)"
 
 deploy:
-	docker stop api-sofc && \
-	docker load -i sofc-image.tar && \
+	docker stop api-blokid; \
+  	docker rm api-blokid; \
 	docker compose up -d api
 
 restart:
-	docker stop api-sofc && \
-	docker compose up -d api
+	docker compose restart api
+
+inspect:
+	docker inspect -f '{{ json .Config.Labels }}' api-blokid

@@ -3,6 +3,24 @@ FROM node:22-alpine AS base
 RUN apk add --no-cache openssl bash mysql-client
 WORKDIR /api-blokid
 
+# Define build arguments
+ARG gitUserName
+ARG gitUserEmail
+ARG gitBranch
+ARG gitCommitHash
+ARG gitCommitMessage
+ARG isCommitted
+ARG deployTime
+
+# Add labels to the image
+LABEL gitUserName=$gitUserName \
+      gitUserEmail=$gitUserEmail \
+      gitBranch=$gitBranch \
+      gitCommitHash=$gitCommitHash \
+      gitCommitMessage=$gitCommitMessage \
+      isCommitted=$isCommitted \
+      deployTime=$deployTime
+
 # Build nestjs app
 FROM base AS builder
 # Install packages and cache it
@@ -27,7 +45,7 @@ RUN npx prisma generate
 FROM base AS server
 COPY --from=preprod /api-blokid/node_modules ./node_modules
 COPY prisma ./
-COPY .env.deployment .env
+COPY .env .env
 COPY package.json yarn.lock ./
 COPY /tools/shell ./tools/shell
 COPY --from=builder /api-blokid/dist ./dist

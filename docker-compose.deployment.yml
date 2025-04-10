@@ -2,13 +2,16 @@ services:
   api:
     container_name: api-blokid
     image: blokid-image
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    networks:
-      - blokid-network
     volumes:
       - ./logs:/api-blokid/logs
       - ./database-backups:/api-blokid/prisma/backups
+    networks:
+      - blokid-network
 
   rabbitmq:
     image: rabbitmq:alpine

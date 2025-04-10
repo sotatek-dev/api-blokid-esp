@@ -9,6 +9,7 @@ data
 documentation
 upload
 prisma/backups
+.git
 # prisma
 prisma/dbml
 prisma/dtos

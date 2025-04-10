@@ -11,7 +11,7 @@ prisma/dtos
 prisma/backups
 src/modules/base/database/dtos
 database-backups
-
+.git
 # test
 test-coverage
 

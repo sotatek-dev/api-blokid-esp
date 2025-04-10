@@ -6,7 +6,7 @@ const SERVER_CONFIG_DEFAULT = {
   API_PREFIX: '/api',
   APP_VERSION: '0.0.1',
   APP_NAME: 'nestjs-boilerplate',
-  SWAGGER_ENDPOINT: 'api-docs',
+  SWAGGER_ENDPOINT: 'docs',
   BCRYPT_SALT_ROUNDS: 10,
   THROTTLER_TTL: 60000,
   THROTTLER_LIMIT: 100,
