@@ -1,7 +1,6 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
-import { UserRole } from '@prisma/client';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { AccessRole } from 'src/common/enums';
 import { convertErrorToObject } from 'src/common/helpers/error';
@@ -28,10 +27,10 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
-
     if (apiRoles.includes(AccessRole.Public)) {
       return true;
     }
+
     // trigger strategy
     const isValidToken = await super.canActivate(context);
     if (!isValidToken) {
@@ -39,19 +38,20 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
     }
 
     const request: SRequest = this.getRequest(context);
-    const userRole = request.user.role as AccessRole;
-    const userId = request.user.id;
 
-    if (!apiRoles.includes(userRole)) {
+    // Role check
+    const userRole = request.user.role;
+    const userId = request.user.id;
+    if (!apiRoles.includes(userRole as AccessRole)) {
       throw new ServerException({
-        ...ERROR_RESPONSE.FORBIDDEN_RESOURCE,
-        message: 'Role access denied',
+        ...ERROR_RESPONSE.ROLE_ACCESS_DENIED,
         details: { userRole, apiRoles },
       });
     }
 
+    // set userId and userRole to AsyncStorage
     AsyncStorage.setUserId(userId);
-    AsyncStorage.setUserRole(userRole as UserRole);
+    AsyncStorage.setUserRole(userRole);
 
     return true;
   }
