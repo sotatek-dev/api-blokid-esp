@@ -1,12 +1,15 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
+import { ServerConfig } from 'server-config/index';
 import { getCurrentDate } from 'src/common/helpers/time';
 import { _ } from 'src/core/libs/lodash';
 
 @Injectable()
 export class DatabaseService extends PrismaClient implements OnModuleInit {
   constructor() {
-    super();
+    super({
+      log: ServerConfig.getPrismaLogLevel(),
+    });
   }
 
   async onModuleInit() {

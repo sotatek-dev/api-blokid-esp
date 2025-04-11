@@ -1,9 +1,9 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import { Prisma } from '@prisma/client';
 import 'dotenv/config.js';
 import { SYSTEM_REGEXS } from 'src/common/const/regex';
 import { ValidationError } from 'src/core/errors';
 import { UnexpectedError } from 'src/core/errors/unexpected';
+import { fs, path } from 'src/core/libs/file-system-manipulate';
 import { Joi } from 'src/core/libs/joi';
 import { _ } from 'src/core/libs/lodash';
 import { NODE_ENV } from 'src/core/platform';
@@ -56,6 +56,13 @@ export class ServerConfig {
     const port = matches[4];
     const database = matches[5];
     return { user, password, host, port, database };
+  }
+
+  public static getPrismaLogLevel(): Prisma.LogLevel[] {
+    const { PRISMA_LOG_LEVEL } = this.config;
+    return Array.isArray(PRISMA_LOG_LEVEL)
+      ? (PRISMA_LOG_LEVEL as any)
+      : [PRISMA_LOG_LEVEL];
   }
 
   /**

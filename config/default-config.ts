@@ -24,6 +24,7 @@ const SERVER_CONFIG_DEFAULT = {
   TZ: 'UTC',
   DISK_STORAGE_PATH: '/tmp/nestjs/uploads',
   BACKUP_PATH: 'prisma/backups',
+  PRISMA_LOG_LEVEL: ['error', 'warn', 'info'],
 };
 
 Object.seal(SERVER_CONFIG_DEFAULT);

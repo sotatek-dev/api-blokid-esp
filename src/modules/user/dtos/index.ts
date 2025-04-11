@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { Gender, UserLanguage, UserRole, UserStatus } from '@prisma/client';
+import { IsEmail } from 'class-validator';
 import { PaginationQueryDto } from 'src/core/platform/dtos';
 import { PropertyDto } from 'src/decorators';
 
@@ -65,6 +66,7 @@ export class GetUserListQueryDto extends PaginationQueryDto {
     required: false,
     validated: true,
   })
+  @IsEmail()
   email: string;
 
   @PropertyDto({
@@ -191,6 +193,7 @@ export class CreateUserBodyDto {
     required: true,
     validated: true,
   })
+  @IsEmail()
   email: string;
 
   @PropertyDto({

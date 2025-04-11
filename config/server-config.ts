@@ -30,6 +30,8 @@ const MAIN_CONFIG = {
   // File
   DISK_STORAGE_PATH: process.env.DISK_STORAGE_PATH,
   BACKUP_PATH: process.env.DISK_STORAGE_PATH,
+  // Prisma
+  PRISMA_LOG_LEVEL: process.env.PRISMA_LOG_LEVEL?.split(','),
 };
 
 Object.seal(MAIN_CONFIG);

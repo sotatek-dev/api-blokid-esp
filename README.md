@@ -1,10 +1,10 @@
 # BlokId ESP API
 
-### Overview
+## Overview
 
 Coming soon
 
-### How to start
+## How to start
 
 ```shell
 docker compose up -d database # start docker
@@ -14,12 +14,12 @@ yarn db:gen
 yarn start:dev
 ```
 
-### Deployment
+## Deployment
 
 ```shell
 yarn api:deploy  # most of the time it works
 # If it is not then
-rsync -avz tmp/blokid-image.tar blokId@45.135.148.228:/home/blokId # push docker image to server
+rsync -avz tmp/blokid-image.tar blokId@172.16.200.107:/home/blokId # push docker image to server
 # You must ssh to server then
 docker load -i blokid-image.tar # load the docker image
 docker run -d --name api-blokid -p 3000:3000 -v ./logs:/api-blokid/logs blokid-image
@@ -27,7 +27,7 @@ docker run -d --name api-blokid -p 3000:3000 -v ./logs:/api-blokid/logs blokid-i
 docker exec -it api-blokid bash # interact 
 ```
 
-### Project special features
+## Project special features
 
 #### How to generate admin
 
@@ -35,9 +35,9 @@ docker exec -it api-blokid bash # interact
 yarn tool:genadmin -e sotatek@gmail.com -p Sota@001
 ```
 
-### Rules, Regulations and Recommendations
+## Rules, Regulations and Recommendations
 
-#### How to write good Dto (recommended)
+### How to write good Dto (recommended)
 
 - **Use `yarn tool:nestjs` to create dto and modules**
 
@@ -52,20 +52,30 @@ If not then:
    e.g.GetCourseResponseDto extends CreateCourseResponseDto)
 7. Take a look at "src/modules/base/database/dtos" for database model overview
 
-#### Automatic generate Dto classes for 1 module
+### Automatic generate Dto classes for 1 module
 
 ```shell
 yarn tool:gendto -m <path> -s <schemaPathInput> 
 # Example: yarn tool:gendto -m cashflow/statement -s cashflow_statement
 ```
 
-#### Draw Entity-Relationship Diagrams, Painlessly 😎
+### Draw Entity-Relationship Diagrams, Painlessly 😎
 
 1. Visit: https://dbdiagram.io/d
 2. Import prisma/dbml/schema.dbml file
 3. Enjoy
 
-### How to debug
+### Code style
+
+- [StyleGuide and Coding Conventions](https://github.com/basarat/typescript-book/blob/master/docs/styleguide/styleguide.md) (
+  An unofficial TypeScript StyleGuide)
+
+### Environment variables
+
+- Use `,` to separate multiple values in the same environment variable (array)
+- .env file can be used to set up Docker image by docker-compose.yml
+
+## How to debug
 
 Webstorm node param:
 
@@ -104,7 +114,7 @@ Vscode config:
 }
 ```
 
-### Database and Prisma Guide
+## Database and Prisma Guide
 
 - **You should use `yarn db` to manipulate with database for better usage.**
 
@@ -118,14 +128,9 @@ Vscode config:
 | `db push`        | Local           | Updates the database without creating a migration file. Use in <b>Local</b>.     |
 | `migrate status` | ALL             | Shows the migration status (pending/applied migrations).                         |
 
-### Code style
+## Importing in this project
 
-- [StyleGuide and Coding Conventions](https://github.com/basarat/typescript-book/blob/master/docs/styleguide/styleguide.md) (
-  An unofficial TypeScript StyleGuide)
-
-### Importing
-
-#### Barrel Files Import
+### Barrel Files Import
 
 1. Barrel files should not be used when importing files within the same directory
 
