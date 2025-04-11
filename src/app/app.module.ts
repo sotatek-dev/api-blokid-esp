@@ -12,6 +12,7 @@ import {
 } from 'src/middlewares';
 import { AuthModule } from 'src/modules/auth';
 import { BaseModule } from 'src/modules/base';
+import { TargetModule } from 'src/modules/target';
 import { UserModule } from 'src/modules/user';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -29,6 +30,7 @@ import { TaskScheduleModule } from '../task-schedule/task-schedule.module';
     ScheduleModule.forRoot(),
     TaskScheduleModule,
     UserModule,
+    TargetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
