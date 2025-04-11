@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Request, Response } from 'express';
+import { ServerConfig } from 'server-config/index';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { convertErrorToObject } from 'src/common/helpers/error';
-import { ServerConfig } from 'src/core/config';
 import { _ } from 'src/core/libs/lodash';
 import { ServerLogger } from 'src/core/logger';
 import { HttpErrorResponseDto } from 'src/core/platform/dtos';

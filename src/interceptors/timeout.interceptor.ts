@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { timeout } from 'rxjs/operators';
+import { ServerConfig } from 'server-config/index';
 import { ERROR_RESPONSE } from 'src/common/const';
-import { ServerConfig } from 'src/core/config';
 import { ServerException } from 'src/exceptions';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
+import { ServerConfig } from 'server-config/index';
 import { ensureDirectoryExists } from 'src/common/helpers/file-system';
 import { getCurrentTime } from 'src/common/helpers/time';
-import { ServerConfig } from 'src/core/config';
 import { ServerLogger } from 'src/core/logger';
 import { DatabaseService } from 'src/modules/base/database';
 

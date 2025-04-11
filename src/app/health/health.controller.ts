@@ -7,8 +7,8 @@ import {
   MemoryHealthIndicator,
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
+import { ServerConfig } from 'server-config/index';
 import { AccessRole } from 'src/common/enums';
-import { ServerConfig } from 'src/core/config';
 import { RoleBaseAccessControl } from 'src/decorators';
 import { DatabaseService } from 'src/modules/base/database/database.service';
 

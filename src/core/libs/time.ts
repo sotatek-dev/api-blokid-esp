@@ -1,6 +1,6 @@
 import * as moment from 'moment-timezone';
 import { MomentInput as TimeInput } from 'moment';
-import { ServerConfig } from 'src/core/config';
+import { ServerConfig } from 'server-config/index';
 
 // no need to moment.tz.setDefault because it is already set in the server environment
 const timezone = ServerConfig.get().TZ;

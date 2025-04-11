@@ -1,10 +1,9 @@
 import { VersioningType } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import 'dotenv/config.js';
+import { corsOptions } from 'server-config/cors';
+import { ServerConfig } from 'server-config/index';
 import { AppModule, AppService } from 'src/app';
-import { ServerConfig } from 'src/core/config';
-import { corsOptions } from 'src/core/config/cors';
 import { ServerLogger } from 'src/core/logger';
 import { HttpExceptionFilter } from 'src/exceptions/filters';
 import { TimeoutInterceptor } from 'src/interceptors';

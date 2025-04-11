@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, UserStatus } from '@prisma/client';
+import { ServerConfig } from 'server-config/index';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { getCurrentDate } from 'src/common/helpers/time';
 import { AsyncStorage } from 'src/core/async-storage';
-import { ServerConfig } from 'src/core/config';
 import { bcrypt } from 'src/core/libs/bcrypt';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService, USER_DEFAULT_SELECT } from 'src/modules/base/database';

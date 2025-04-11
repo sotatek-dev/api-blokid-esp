@@ -1,4 +1,4 @@
-import { ServerConfig } from 'src/core/config';
+import { ServerConfig } from 'server-config/index';
 import { UnexpectedError } from 'src/core/errors/unexpected';
 import { jwt } from 'src/core/libs/jwt';
 

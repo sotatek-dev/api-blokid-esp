@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { ServerConfig } from 'server-config/index';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { generateRandomString } from 'src/common/helpers/string';
-import { ServerConfig } from 'src/core/config';
 import { bcrypt } from 'src/core/libs/bcrypt';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService, USER_DEFAULT_SELECT } from 'src/modules/base/database';

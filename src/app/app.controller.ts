@@ -1,8 +1,8 @@
 import { Controller, Get, HttpCode, HttpStatus, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ServerConfig } from 'server-config/index';
 import { AccessRole } from 'src/common/enums';
 import { timeoutFor } from 'src/common/helpers/promise';
-import { ServerConfig } from 'src/core/config';
 import { RoleBaseAccessControl, SwaggerApiDocument } from 'src/decorators';
 
 @Controller({ version: VERSION_NEUTRAL })

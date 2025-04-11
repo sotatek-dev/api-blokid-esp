@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { rateLimit } from 'express-rate-limit';
+import { ServerConfig } from 'server-config/index';
 import { ERROR_RESPONSE } from 'src/common/const';
-import { ServerConfig } from 'src/core/config';
 
 /**
  * @overview `RateLimitMiddleware` is a middleware that limits the number of requests a client can make to the API within a certain time period.

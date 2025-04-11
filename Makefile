@@ -19,8 +19,5 @@ restart:
 inspect:
 	docker inspect -f '{{ json .Config.Labels }}' api-blokid
 
-migrate-dev:
+migrate:
 	docker exec -it api-blokid bash -c "npx prisma migrate dev"
-
-migrate-prod:
-	docker exec -it api-blokid bash -c "npx prisma migrate deploy"

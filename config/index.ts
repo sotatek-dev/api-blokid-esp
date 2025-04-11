@@ -1,5 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import 'dotenv/config.js';
 import { SYSTEM_REGEXS } from 'src/common/const/regex';
 import { ValidationError } from 'src/core/errors';
 import { UnexpectedError } from 'src/core/errors/unexpected';
@@ -114,7 +115,7 @@ export class ServerConfig {
   }
 
   private static readPackageJsonFile() {
-    const filepath = path.join(__dirname, '../../../package.json');
+    const filepath = path.join(__dirname, '../package.json');
     this.packageJson = fs.readJsonSync(filepath);
   }
 
