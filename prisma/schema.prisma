@@ -38,7 +38,7 @@ model User {
   password           String
   fullName           String?
   phoneNumber        String?
-  status             UserStatus   @default(InActive)
+  status             UserStatus   @default(Inactive)
   dob                DateTime?
   role               UserRole
   gender             Gender       @default(Other)
@@ -52,6 +52,91 @@ model User {
   deletedAt          DateTime?
 }
 
+model TargetPerson {
+  id               Int              @id @default(autoincrement())
+  firstname        String?
+  lastname         String?
+  email            String?
+  emailHash        String?
+  address          String? // todo: what if TargetPerson.address != Enrichment.address
+  linkedinUrl      String?
+  phoneNumber      String?
+  enrichmentStatus EnrichmentStatus @default(NoEnrichment)
+  intentScore      Float?
+  targetCompanyId  Int?
+  locality         String?
+  region           String?
+  postalCode       String?
+  school           String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+
+  TargetCompany TargetCompany? @relation(fields: [targetCompanyId], references: [id])
+  Footprint     Footprint[]
+  Enrichment    Enrichment[]
+}
+
+// save enrichment data from peopledatalab
+model Enrichment {
+  id                       Int            @id @default(autoincrement())
+  targetPersonId           Int
+  seniorityLevel           Int?
+  managementResponsibility Boolean?
+  role                     String?
+  customTags               Json?
+  companyName              String?
+  lastestSeen              Json?
+  department               String?
+  address                  String? // todo: what if TargetPerson.address != Enrichment.address
+  emailStatus              EmailStatus
+  type                     EnrichmentType
+  response                 Json?
+  request                  Json?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  deletedAt                DateTime?
+
+  TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
+}
+
+model TargetCompany {
+  id             Int       @id @default(autoincrement())
+  name           String?
+  overview       String?   @db.Text
+  ticker         String?
+  website        String?   @unique
+  profileUrl     String?   @unique
+  location       String?
+  street         String?
+  locality       String?
+  region         String?
+  country        String?
+  postalCode     String?
+  industry       String?
+  companyDomain  String?
+  companySize    String?
+  parentCompany  String?
+  companyRevenue String?
+  hqLocation     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  TargetPerson TargetPerson[]
+}
+
+model Footprint {
+  id             Int             @id @default(autoincrement())
+  targetPersonId Int
+  action         FootprintAction
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+
+  TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
+}
+
 // -------------------------------- Enums -------------------------------
 enum UserRole {
   Admin
@@ -61,7 +146,7 @@ enum UserRole {
 
 enum UserStatus {
   Active
-  InActive
+  Inactive
   Closed
 }
 
@@ -74,4 +159,25 @@ enum Gender {
 enum UserLanguage {
   En
   Vn
+}
+
+enum FootprintAction {
+  ClickAd
+}
+
+enum EnrichmentType {
+  Person
+  Company
+}
+
+enum EmailStatus {
+  Valid
+  Invalid
+}
+
+enum EnrichmentStatus {
+  InProgress
+  Completed
+  Failed
+  NoEnrichment
 }
