@@ -50,91 +50,171 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
+
+  Business Business?
 }
 
+// our system business
+model Business {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  website   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  Users         User            @relation(fields: [userId], references: [id])
+  TargetPerson  TargetPerson[]
+  Campaign      Campaign[]
+  TargetCompany TargetCompany[]
+}
+
+model Campaign {
+  id                Int              @id @default(autoincrement())
+  campaignName      String
+  totalBudget       Float?
+  remaining         Float
+  reached           Float
+  startDate         DateTime?
+  endDate           DateTime
+  status            CampaignStatus
+  objectives        CampainObjective
+  description       String?
+  geography         Json // string[]
+  role              Json // string[]
+  businessId        Int
+  campaignMetricId  Int
+  isBugdetByChannel Boolean          @default(false) // maybe enum
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  Business         Business           @relation(fields: [businessId], references: [id])
+  CampaignStrategy CampaignStrategy[]
+  CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
+}
+
+model CampaignStrategy {
+  id               Int                     @id @default(autoincrement())
+  status           CampaignStatus
+  channel          CampaignStrategyChannel
+  budget           Float
+  format           StrategyAdFormat
+  creativeLink     String?
+  startDate        DateTime?
+  finishDate       DateTime?
+  campaignId       Int
+  campaignMetricId Int
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  deletedAt        DateTime?
+
+  Campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  CampaignMetric CampaignMetric @relation(fields: [campaignMetricId], references: [id])
+}
+
+// do we need this?
+model CampaignMetric {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  Campaign         Campaign[]
+  CampaignStrategy CampaignStrategy[]
+}
+
+// Personal who create by target upload (csv)
 model TargetPerson {
   id               Int              @id @default(autoincrement())
-  firstname        String?
-  lastname         String?
-  email            String?
-  emailHash        String?
-  address          String? // todo: what if TargetPerson.address != Enrichment.address
-  linkedinUrl      String?
-  phoneNumber      String?
+  fullname         String?
+  companyName      String?
+  role             String?
+  department       String?
   enrichmentStatus EnrichmentStatus @default(NoEnrichment)
   intentScore      Float?
   targetCompanyId  Int?
-  locality         String?
-  region           String?
-  postalCode       String?
-  school           String?
+  businessId       Int
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
 
-  TargetCompany TargetCompany? @relation(fields: [targetCompanyId], references: [id])
   Footprint     Footprint[]
-  Enrichment    Enrichment[]
+  Enrichment    PersonEnrichment[]
+  EnrichmentRaw EnrichmentRaw[]
+  Business      Business           @relation(fields: [businessId], references: [id])
 }
 
-// save enrichment data from peopledatalab
-model Enrichment {
-  id                       Int            @id @default(autoincrement())
-  targetPersonId           Int
-  seniorityLevel           Int?
+model PersonEnrichment {
+  id                       Int       @id @default(autoincrement())
+  fullName                 String?
+  title                    String?
+  email                    String?
+  emailStatus              String?
+  linkedin                 String?
+  phoneNumber              String?
+  address                  String?
+  company                  String?
+  seniorityLevel           String?
+  department               String?
   managementResponsibility Boolean?
   role                     String?
   customTags               Json?
   companyName              String?
   lastestSeen              Json?
-  department               String?
-  address                  String? // todo: what if TargetPerson.address != Enrichment.address
-  emailStatus              EmailStatus
-  type                     EnrichmentType
-  response                 Json?
-  request                  Json?
-  createdAt                DateTime       @default(now())
-  updatedAt                DateTime       @updatedAt
+  lastSeenPlatform         String?
+  targetPersonId           Int
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
   deletedAt                DateTime?
 
   TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
 }
 
-model TargetCompany {
-  id             Int       @id @default(autoincrement())
-  name           String?
-  overview       String?   @db.Text
-  ticker         String?
-  website        String?   @unique
-  profileUrl     String?   @unique
-  location       String?
-  street         String?
-  locality       String?
-  region         String?
-  country        String?
-  postalCode     String?
-  industry       String?
-  companyDomain  String?
-  companySize    String?
-  parentCompany  String?
-  companyRevenue String?
-  hqLocation     String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+// save enrichment data from peopledatalab
+// system read only
+model EnrichmentRaw {
+  id             Int            @id @default(autoincrement())
+  targetPersonId Int
+  targetList     Json
+  request        Json
+  response       Json?
+  type           EnrichmentType
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
 
-  TargetPerson TargetPerson[]
+  TargetPerson TargetPerson? @relation(fields: [targetPersonId], references: [id])
+}
+
+model TargetCompany {
+  id         Int       @id @default(autoincrement())
+  businessId Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  Business Business @relation(fields: [businessId], references: [id])
 }
 
 model Footprint {
-  id             Int             @id @default(autoincrement())
-  targetPersonId Int
-  action         FootprintAction
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  deletedAt      DateTime?
+  id            Int              @id @default(autoincrement())
+  action        FootprintAction
+  element       FootprintElement
+  description   String //
+  priorityLevel PriorityLevel
+  intentScore   Float?
+  confidence    Float?
+  personId      Int
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  deletedAt     DateTime?
 
-  TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
+  TargetPerson TargetPerson @relation(fields: [personId], references: [id])
 }
 
 // -------------------------------- Enums -------------------------------
@@ -162,7 +242,12 @@ enum UserLanguage {
 }
 
 enum FootprintAction {
-  ClickAd
+  Click
+  Download
+  View
+  SubmitForm
+  Visit
+  Share
 }
 
 enum EnrichmentType {
@@ -180,4 +265,45 @@ enum EnrichmentStatus {
   Completed
   Failed
   NoEnrichment
+}
+
+enum PriorityLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum FootprintElement {
+  Ads
+  Button
+  Link
+  Form
+  Page
+  Content
+}
+
+enum CampaignStatus {
+  Active
+  Suspended
+  WaitingToLaunch
+  Completed
+  Paused
+  Cancelled
+}
+
+enum CampainObjective {
+  Nurture
+  Engagement
+  Awareness
+}
+
+enum CampaignStrategyChannel {
+  GoogleAds
+  LinkedIn
+  DV360
+}
+
+enum StrategyAdFormat {
+  SingleImage
+  SingleVideo
 }
