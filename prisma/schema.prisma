@@ -59,6 +59,7 @@ model Business {
   id        Int       @id @default(autoincrement())
   userId    Int       @unique
   name      String
+  geography String?
   email     String?
   phone     String?
   address   String?
@@ -76,26 +77,27 @@ model Business {
 model Campaign {
   id                Int              @id @default(autoincrement())
   campaignName      String
-  totalBudget       Float?
+  budget            Float?
+  spend             Float?
   remaining         Float
-  reached           Float
-  startDate         DateTime?
-  endDate           DateTime
+  reached           Float // percentage
+  startDate         DateTime
+  endDate           DateTime?
   status            CampaignStatus
   objectives        CampainObjective
   description       String?
   geography         Json // string[]
   role              Json // string[]
   businessId        Int
-  campaignMetricId  Int
+  campaignMetricId  Int              @unique
   isBugdetByChannel Boolean          @default(false) // maybe enum
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
 
   Business         Business           @relation(fields: [businessId], references: [id])
-  CampaignStrategy CampaignStrategy[]
   CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
+  CampaignStrategy CampaignStrategy[]
 }
 
 model CampaignStrategy {
@@ -108,7 +110,7 @@ model CampaignStrategy {
   startDate        DateTime?
   finishDate       DateTime?
   campaignId       Int
-  campaignMetricId Int
+  campaignMetricId Int                     @unique
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
   deletedAt        DateTime?
@@ -117,15 +119,19 @@ model CampaignStrategy {
   CampaignMetric CampaignMetric @relation(fields: [campaignMetricId], references: [id])
 }
 
-// do we need this?
 model CampaignMetric {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id            Int       @id @default(autoincrement())
+  spend         Float?
+  account       Int?
+  impressions   Int?
+  avgTimeOnSite Float?
+  performance   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
 
-  Campaign         Campaign[]
-  CampaignStrategy CampaignStrategy[]
+  Campaign         Campaign?
+  CampaignStrategy CampaignStrategy?
 }
 
 // Personal who create by target upload (csv)
@@ -143,10 +149,11 @@ model TargetPerson {
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
 
-  Footprint     Footprint[]
-  Enrichment    PersonEnrichment[]
-  EnrichmentRaw EnrichmentRaw[]
-  Business      Business           @relation(fields: [businessId], references: [id])
+  Business           Business             @relation(fields: [businessId], references: [id])
+  Footprint          Footprint[]
+  Enrichment         PersonEnrichment[]
+  EnrichmentRaw      EnrichmentRaw[]
+  IdentifyResolution IdentifyResolution[]
 }
 
 model PersonEnrichment {
@@ -213,6 +220,22 @@ model Footprint {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   deletedAt     DateTime?
+
+  TargetPerson TargetPerson @relation(fields: [personId], references: [id])
+}
+
+model IdentifyResolution {
+  id                Int       @id @default(autoincrement())
+  personId          Int
+  email             String?
+  emailHash         String?
+  ip                String?
+  uid               String?
+  deviceFingerprint String?
+  confidence        Float?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
   TargetPerson TargetPerson @relation(fields: [personId], references: [id])
 }
