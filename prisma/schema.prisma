@@ -64,7 +64,7 @@ model Campaign {
   startDate         DateTime
   endDate           DateTime?
   status            CampaignStatus
-  objectives        CampainObjective
+  objective         CampainObjective
   description       String?
   geography         Json // string[]
   role              Json // string[]
@@ -83,8 +83,9 @@ model CampaignStrategy {
   status           CampaignStatus
   channel          CampaignStrategyChannel
   budget           Float
-  format           StrategyAdFormat
-  creativeLink     String?
+  format           StrategyAdFormat // single image, single video
+  creativeLink     String? //  image link
+  content          String?
   startDate        DateTime?
   finishDate       DateTime?
   campaignId       Int
@@ -135,27 +136,23 @@ model TargetPerson {
 }
 
 model PersonEnrichment {
-  id                       Int       @id @default(autoincrement())
-  fullName                 String?
-  title                    String?
-  email                    String?
-  emailStatus              String?
-  linkedin                 String?
-  phoneNumber              String?
-  address                  String?
-  company                  String?
-  seniorityLevel           String?
-  department               String?
-  managementResponsibility Boolean?
-  role                     String?
-  customTags               Json?
-  companyName              String?
-  lastestSeen              Json?
-  lastSeenPlatform         String?
-  targetPersonId           Int
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
-  deletedAt                DateTime?
+  id             Int       @id @default(autoincrement())
+  fullName       String?
+  gender         String?
+  title          String?
+  email          String?
+  emailStatus    String?
+  linkedin       String?
+  phoneNumber    String?
+  address        String?
+  company        String?
+  department     String?
+  role           String?
+  companyName    String?
+  targetPersonId Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
 
   TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
 }
