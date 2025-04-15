@@ -50,28 +50,6 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
-
-  Business Business?
-}
-
-// our system business
-model Business {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @unique
-  name      String
-  geography String?
-  email     String?
-  phone     String?
-  address   String?
-  website   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  Users         User            @relation(fields: [userId], references: [id])
-  TargetPerson  TargetPerson[]
-  Campaign      Campaign[]
-  TargetCompany TargetCompany[]
 }
 
 model Campaign {
@@ -88,14 +66,12 @@ model Campaign {
   description       String?
   geography         Json // string[]
   role              Json // string[]
-  businessId        Int
   campaignMetricId  Int              @unique
   isBugdetByChannel Boolean          @default(false) // maybe enum
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
 
-  Business         Business           @relation(fields: [businessId], references: [id])
   CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
   CampaignStrategy CampaignStrategy[]
 }
@@ -137,19 +113,19 @@ model CampaignMetric {
 // Personal who create by target upload (csv)
 model TargetPerson {
   id               Int              @id @default(autoincrement())
-  fullname         String?
+  firstName        String?
+  lastName         String?
+  fullName         String?
   companyName      String?
   role             String?
   department       String?
   enrichmentStatus EnrichmentStatus @default(NoEnrichment)
   intentScore      Float?
   targetCompanyId  Int?
-  businessId       Int
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
 
-  Business           Business             @relation(fields: [businessId], references: [id])
   Footprint          Footprint[]
   Enrichment         PersonEnrichment[]
   EnrichmentRaw      EnrichmentRaw[]
@@ -199,13 +175,10 @@ model EnrichmentRaw {
 }
 
 model TargetCompany {
-  id         Int       @id @default(autoincrement())
-  businessId Int
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
-
-  Business Business @relation(fields: [businessId], references: [id])
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Footprint {
