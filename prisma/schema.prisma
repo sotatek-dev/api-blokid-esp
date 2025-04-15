@@ -50,6 +50,8 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
+
+  TargetCompany TargetCompany[]
 }
 
 model Campaign {
@@ -176,9 +178,14 @@ model EnrichmentRaw {
 
 model TargetCompany {
   id        Int       @id @default(autoincrement())
+  userId    Int?
+  name      String
+  geography String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  User User? @relation(fields: [userId], references: [id])
 }
 
 model Footprint {
