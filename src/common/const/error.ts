@@ -116,6 +116,11 @@ export const ERROR_RESPONSE = {
     errorCode: 22,
     message: `Request timeout`,
   },
+  RESOURCE_NOT_FOUND: {
+    statusCode: HttpStatus.NOT_FOUND,
+    errorCode: 23,
+    message: `RESOURCE_NOT_FOUND`,
+  },
   /*------------------------------ Defined ERROR below ------------------------------*/
 };
 

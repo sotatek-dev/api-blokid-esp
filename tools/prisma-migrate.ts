@@ -1,9 +1,8 @@
 import { select } from '@inquirer/prompts';
 import { exec, spawn } from 'child_process';
 import 'dotenv/config.js';
-import { ServerConfig } from 'src/core/config';
+import { ServerConfig } from 'server-config/index';
 import { ValidationError } from 'src/core/errors';
-import { fs } from 'src/core/libs/file-system-manipulate';
 import { NODE_ENV } from 'src/core/platform';
 
 export class PrismaMigrate {
