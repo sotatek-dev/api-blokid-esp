@@ -46,6 +46,15 @@ export class BaseTargetPersonResponseDto {
   createdAt: Date;
 }
 
+export class UploadSingleFileBodyDto {
+  @PropertyDto({
+    type: 'file',
+    required: true,
+    validated: true,
+  })
+  file: string;
+}
+
 // ****************************** GET TargetPerson dto ******************************
 export class GetTargetPersonDetailResponseDto extends BaseTargetPersonResponseDto {
   // Add more fields if needed such as relations
@@ -195,15 +204,6 @@ export class UpdateTargetPersonResponseDto extends BaseTargetPersonResponseDto {
 
 // ****************************** Upload TargetPerson ******************************
 export class UploadTargetPersonListResponseDto {}
-
-export class UploadTargetPersonListBodyDto {
-  @PropertyDto({
-    type: 'file',
-    required: true,
-    validated: true,
-  })
-  file: string;
-}
 
 // ****************************** EnrichPerson ******************************
 export class EnrichPeopleResponseDto {

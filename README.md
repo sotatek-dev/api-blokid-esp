@@ -32,7 +32,7 @@ docker exec -it api-blokid bash # interact
 #### How to generate admin
 
 ```shell
-yarn tool:genadmin -e sotatek@gmail.com -p Sota@001
+yarn tool:genadmin -e admin@sotatek.com -p Sota@001
 ```
 
 ## Rules, Regulations and Recommendations

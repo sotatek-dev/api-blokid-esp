@@ -43,6 +43,7 @@ export class GenerateAdmin extends CommandRunner {
         password: hashPassword,
         lastActive: getCurrentDate(),
         status: UserStatus.Active,
+        TargetCompany: { create: { name: `Westpac`, geography: `Australia` } },
       },
     });
     ServerLogger.info({ message: `Admin ${email} is created`, context: `GenerateAdmin` });

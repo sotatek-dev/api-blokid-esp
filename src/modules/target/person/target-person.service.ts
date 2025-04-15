@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
+import { MulterFile } from 'src/core/platform';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
 import {
@@ -9,7 +10,7 @@ import {
   EnrichPeopleBodyDto,
   GetTargetPersonListQueryDto,
   UpdateTargetPersonBodyDto,
-  UploadTargetPersonListBodyDto,
+  UploadSingleFileBodyDto,
 } from './dtos';
 
 @Injectable()
@@ -92,7 +93,7 @@ export class TargetPersonService {
     return this.databaseService.targetPerson.delete({ where: { id } });
   }
 
-  async uploadTargetPersonList(body: UploadTargetPersonListBodyDto) {
+  async uploadTargetPersonList(body: MulterFile) {
     return undefined;
   }
 

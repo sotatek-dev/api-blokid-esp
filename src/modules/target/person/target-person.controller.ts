@@ -9,10 +9,17 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { ServerConfig } from 'server-config/index';
+import { xlsxFileMimeTypes } from 'src/common/const/file.const';
 import { AccessRole } from 'src/common/enums';
+import { BodyContentType, MulterFile } from 'src/core/platform';
 import { PaginationResponseDto } from 'src/core/platform/dtos';
 import { RoleBaseAccessControl, SwaggerApiDocument } from 'src/decorators';
 import { AuthGuard } from 'src/guards';
@@ -26,7 +33,7 @@ import {
   GetTargetPersonListResponseDto,
   UpdateTargetPersonBodyDto,
   UpdateTargetPersonResponseDto,
-  UploadTargetPersonListBodyDto,
+  UploadSingleFileBodyDto,
   UploadTargetPersonListResponseDto,
 } from './dtos';
 import { TargetPersonService } from './target-person.service';
@@ -37,6 +44,10 @@ import { TargetPersonService } from './target-person.service';
 @RoleBaseAccessControl([AccessRole.Admin])
 @ApiBearerAuth()
 export class TargetPersonController {
+  private static readonly storage = diskStorage({
+    destination: ServerConfig.get().DISK_STORAGE_PATH,
+  });
+
   constructor(private readonly targetPersonService: TargetPersonService) {}
 
   @Post()
@@ -78,16 +89,23 @@ export class TargetPersonController {
     response: {
       type: UploadTargetPersonListResponseDto,
     },
-    body: { type: UploadTargetPersonListBodyDto, required: true },
+    contentType: [BodyContentType.MultipartFormData],
+    body: { type: UploadSingleFileBodyDto, required: true },
     operation: {
       operationId: `uploadTargetPersonList`,
       summary: `Api uploadTargetPersonList`,
+      description: `Accepts mimetype: ${xlsxFileMimeTypes}`,
     },
   })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: TargetPersonController.storage,
+    }),
+  )
   async uploadTargetPersonList(
-    @Body() body: UploadTargetPersonListBodyDto,
+    @UploadedFile() file: MulterFile,
   ): Promise<UploadTargetPersonListResponseDto> {
-    return this.targetPersonService.uploadTargetPersonList(body);
+    return this.targetPersonService.uploadTargetPersonList(file);
   }
 
   @Post(`enrichments`)

@@ -81,7 +81,10 @@ export class UserService {
     if (!user) {
       throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
     }
-    return user;
+    const TargetCompany = await this.databaseService.targetCompany.findMany({
+      where: { userId: id },
+    });
+    return { ...user, TargetCompany };
   }
 
   async updateUser(id: number, body: UpdateUserBodyDto) {
