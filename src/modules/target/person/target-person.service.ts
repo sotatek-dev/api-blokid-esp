@@ -26,15 +26,11 @@ export class TargetPersonService {
     const { page, pageSize, take, skip } = validatePaginationQueryDto(query);
 
     const where: Prisma.TargetPersonWhereInput = {
-      ...(query.id && { id: query.id }),
       ...(query.name && { fullName: { contains: query.name } }),
-      ...(query.companyName && { companyName: query.companyName }),
-      ...(query.department && { department: query.department }),
+      ...(query.department && { department: { contains: query.department } }),
       ...(query.enrichmentStatus && { enrichmentStatus: { in: query.enrichmentStatus } }),
       ...(query.targetCompanyId && { targetCompanyId: query.targetCompanyId }),
-      Enrichment: {
-        some: {},
-      },
+      ...(query.position && { position: { contains: query.position } }),
     };
     if (query.createdAtRangeStart || query.createdAtRangeEnd) {
       where.createdAt = {
@@ -46,11 +42,6 @@ export class TargetPersonService {
       where.intentScore = {
         gte: query.intentScoreRangeStart,
         lte: query.intentScoreRangeEnd,
-      };
-    }
-    if (query.position) {
-      where.Enrichment = {
-        some: { position: { contains: query.position } },
       };
     }
 

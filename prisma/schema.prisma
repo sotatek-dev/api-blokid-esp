@@ -51,7 +51,7 @@ model User {
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
 
-  TargetCompany TargetCompany[]
+  TargetCompanies TargetCompany[]
 }
 
 model Campaign {
@@ -75,9 +75,9 @@ model Campaign {
   updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
 
-  CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
-  TargetCompany    TargetCompany      @relation(fields: [targetCompanyId], references: [id])
-  CampaignStrategy CampaignStrategy[]
+  CampaignMetric     CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
+  TargetCompany      TargetCompany      @relation(fields: [targetCompanyId], references: [id])
+  CampaignStrategies CampaignStrategy[]
 }
 
 model CampaignStrategy {
@@ -121,7 +121,6 @@ model TargetPerson {
   firstName          String?
   lastName           String?
   fullName           String?
-  companyName        String?
   linkedinProfileUrl String?
   email              String?
   phoneNumber        String?
@@ -134,10 +133,10 @@ model TargetPerson {
   updatedAt          DateTime         @updatedAt
   deletedAt          DateTime?
 
-  Footprint          Footprint[]
-  Enrichment         PersonEnrichment[]
-  EnrichmentRaw      EnrichmentRaw[]
-  IdentifyResolution IdentifyResolution[]
+  Footprints          Footprint[]
+  Enrichments         PersonEnrichment[]
+  EnrichmentRaws      EnrichmentRaw[]
+  IdentifyResolutions IdentifyResolution[]
 }
 
 model PersonEnrichment {
@@ -187,8 +186,8 @@ model TargetCompany {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  User     User?      @relation(fields: [userId], references: [id])
-  Campaign Campaign[]
+  User      User?      @relation(fields: [userId], references: [id])
+  Campaigns Campaign[]
 }
 
 model Footprint {
