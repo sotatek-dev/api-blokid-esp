@@ -6,27 +6,26 @@ import { MulterFile } from 'src/core/platform';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
 import {
-  CreateTargetPersonBodyDto,
+  CreateExecutivePersonBodyDto,
   EnrichPeopleBodyDto,
-  GetTargetPersonListQueryDto,
-  UpdateTargetPersonBodyDto,
-  UploadSingleFileBodyDto,
+  GetExecutivePersonListQueryDto,
+  UpdateExecutivePersonBodyDto,
 } from './dtos';
 
 @Injectable()
-export class TargetPersonService {
+export class ExecutivePersonService {
   constructor(private databaseService: DatabaseService) {}
 
-  async createTargetPerson(body: CreateTargetPersonBodyDto) {
-    return this.databaseService.targetPerson.create({
-      data: { ...body, fullName: `${body.firstName} ${body.lastName}` },
+  async createExecutivePerson(body: CreateExecutivePersonBodyDto) {
+    return this.databaseService.executivePerson.create({
+      data: { ...body },
     });
   }
 
-  async getTargetPersonList(query: GetTargetPersonListQueryDto) {
+  async getExecutivePersonList(query: GetExecutivePersonListQueryDto) {
     const { page, pageSize, take, skip } = validatePaginationQueryDto(query);
 
-    const where: Prisma.TargetPersonWhereInput = {
+    const where: Prisma.ExecutivePersonWhereInput = {
       ...(query.name && { fullName: { contains: query.name } }),
       ...(query.department && { department: { contains: query.department } }),
       ...(query.enrichmentStatus && { enrichmentStatus: { in: query.enrichmentStatus } }),
@@ -47,57 +46,57 @@ export class TargetPersonService {
     }
 
     const [data, total] = await Promise.all([
-      this.databaseService.targetPerson.findMany({
+      this.databaseService.executivePerson.findMany({
         where,
         take,
         skip,
         ...(query.lastItemId && { cursor: { id: query.lastItemId } }),
       }),
-      this.databaseService.targetPerson.count({ where }),
+      this.databaseService.executivePerson.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / pageSize);
     return { data, pagination: { page, pageSize, total, totalPages } };
   }
 
-  async getTargetPersonDetail(id: number) {
-    const targetPerson = await this.databaseService.targetPerson.findFirst({
+  async getExecutivePersonDetail(id: number) {
+    const executivePerson = await this.databaseService.executivePerson.findFirst({
       where: { id },
     });
-    if (!targetPerson) {
+    if (!executivePerson) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return targetPerson;
+    return executivePerson;
   }
 
-  async updateTargetPerson(id: number, body: UpdateTargetPersonBodyDto) {
-    const targetPerson = await this.databaseService.targetPerson.findFirst({
+  async updateExecutivePerson(id: number, body: UpdateExecutivePersonBodyDto) {
+    const executivePerson = await this.databaseService.executivePerson.findFirst({
       where: { id },
     });
-    if (!targetPerson) {
+    if (!executivePerson) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return this.databaseService.targetPerson.update({
+    return this.databaseService.executivePerson.update({
       where: { id },
       data: { ...body },
     });
   }
 
-  async deleteTargetPerson(id: number) {
-    const targetPerson = await this.databaseService.targetPerson.findFirst({
+  async deleteExecutivePerson(id: number) {
+    const executivePerson = await this.databaseService.executivePerson.findFirst({
       where: { id },
     });
-    if (!targetPerson) {
+    if (!executivePerson) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return this.databaseService.targetPerson.delete({ where: { id } });
+    return this.databaseService.executivePerson.delete({ where: { id } });
   }
 
-  async uploadTargetPersonList(body: MulterFile) {
+  uploadExecutive(file: MulterFile) {
     return undefined;
   }
 
-  async enrichPeople(body: EnrichPeopleBodyDto) {
+  enrichPeople(body: EnrichPeopleBodyDto) {
     return undefined;
   }
 }

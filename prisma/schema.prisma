@@ -51,72 +51,46 @@ model User {
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
 
-  TargetCompany TargetCompany[]
+  Business Business?
 }
 
-model Campaign {
-  id                Int              @id @default(autoincrement())
-  campaignName      String
-  budget            Float?
-  spend             Float?
-  remaining         Float
-  reached           Float // percentage
-  startDate         DateTime
-  endDate           DateTime?
-  status            CampaignStatus
-  objective         CampainObjective
-  description       String?
-  geography         Json // string[]
-  role              Json // string[]
-  targetCompanyId   Int
-  campaignMetricId  Int              @unique
-  isBugdetByChannel Boolean          @default(false) // maybe enum
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
+model Business {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
-  TargetCompany    TargetCompany      @relation(fields: [targetCompanyId], references: [id])
-  CampaignStrategy CampaignStrategy[]
+  TargetCompany ExecutiveCompany[]
+  User          User               @relation(fields: [userId], references: [id])
 }
 
-model CampaignStrategy {
-  id               Int                     @id @default(autoincrement())
-  status           CampaignStatus
-  channel          CampaignStrategyChannel
-  budget           Float
-  format           StrategyAdFormat // single image, single video
-  creativeLink     String? //  image link
-  content          String?
-  startDate        DateTime?
-  finishDate       DateTime?
-  campaignId       Int
-  campaignMetricId Int                     @unique
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-  deletedAt        DateTime?
+model ExecutiveCompany {
+  id         Int       @id @default(autoincrement())
+  businessId Int?
+  name       String
+  geography  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
 
-  Campaign       Campaign       @relation(fields: [campaignId], references: [id])
-  CampaignMetric CampaignMetric @relation(fields: [campaignMetricId], references: [id])
+  Campaign Campaign[]
+  Business Business?  @relation(fields: [businessId], references: [id])
 }
 
-model CampaignMetric {
-  id            Int       @id @default(autoincrement())
-  spend         Float?
-  account       Int?
-  impressions   Int?
-  avgTimeOnSite Float?
-  performance   Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-
-  Campaign         Campaign?
-  CampaignStrategy CampaignStrategy?
+model ExecutiveUpload {
+  id          Int       @id @default(autoincrement())
+  fileName    String
+  quantity    Int
+  storageLink String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 }
 
 // Personal who create by target upload (csv)
-model TargetPerson {
+model ExecutivePerson {
   id                 Int              @id @default(autoincrement())
   firstName          String?
   lastName           String?
@@ -158,7 +132,7 @@ model PersonEnrichment {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  TargetPerson TargetPerson @relation(fields: [targetPersonId], references: [id])
+  TargetPerson ExecutivePerson @relation(fields: [targetPersonId], references: [id])
 }
 
 // save enrichment data from peopledatalab
@@ -174,20 +148,7 @@ model EnrichmentRaw {
   updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
 
-  TargetPerson TargetPerson? @relation(fields: [targetPersonId], references: [id])
-}
-
-model TargetCompany {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  name      String
-  geography String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  User     User       @relation(fields: [userId], references: [id])
-  Campaign Campaign[]
+  TargetPerson ExecutivePerson? @relation(fields: [targetPersonId], references: [id])
 }
 
 model Footprint {
@@ -203,7 +164,7 @@ model Footprint {
   updatedAt     DateTime         @updatedAt
   deletedAt     DateTime?
 
-  TargetPerson TargetPerson @relation(fields: [personId], references: [id])
+  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
 }
 
 model IdentifyResolution {
@@ -219,7 +180,68 @@ model IdentifyResolution {
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
 
-  TargetPerson TargetPerson @relation(fields: [personId], references: [id])
+  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
+}
+
+model Campaign {
+  id                Int              @id @default(autoincrement())
+  campaignName      String
+  budget            Float?
+  spend             Float?
+  remaining         Float
+  reached           Float // percentage
+  startDate         DateTime
+  endDate           DateTime?
+  status            CampaignStatus
+  objective         CampainObjective
+  description       String?
+  geography         Json // string[]
+  role              Json // string[]
+  targetCompanyId   Int
+  campaignMetricId  Int              @unique
+  isBugdetByChannel Boolean          @default(false) // maybe enum
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
+  TargetCompany    ExecutiveCompany   @relation(fields: [targetCompanyId], references: [id])
+  CampaignStrategy CampaignStrategy[]
+}
+
+model CampaignStrategy {
+  id               Int                     @id @default(autoincrement())
+  status           CampaignStatus
+  channel          CampaignStrategyChannel
+  budget           Float
+  format           StrategyAdFormat // single image, single video
+  creativeLink     String? //  image link
+  content          String?
+  startDate        DateTime?
+  finishDate       DateTime?
+  campaignId       Int
+  campaignMetricId Int                     @unique
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  deletedAt        DateTime?
+
+  Campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  CampaignMetric CampaignMetric @relation(fields: [campaignMetricId], references: [id])
+}
+
+model CampaignMetric {
+  id            Int       @id @default(autoincrement())
+  spend         Float?
+  account       Int?
+  impressions   Int?
+  avgTimeOnSite Float?
+  performance   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  Campaign         Campaign?
+  CampaignStrategy CampaignStrategy?
 }
 
 // -------------------------------- Enums -------------------------------

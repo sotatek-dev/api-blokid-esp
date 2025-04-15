@@ -5,27 +5,27 @@ import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
 import {
-  CreateTargetCompanyBodyDto,
-  GetTargetCompanyListQueryDto,
-  UpdateTargetCompanyBodyDto,
+  CreateExecutiveCompanyBodyDto,
+  GetExecutiveCompanyListQueryDto,
+  UpdateExecutiveCompanyBodyDto,
 } from './dtos';
 
 @Injectable()
-export class TargetCompanyService {
+export class ExecutiveCompanyService {
   constructor(private databaseService: DatabaseService) {}
 
-  async createTargetCompany(body: CreateTargetCompanyBodyDto) {
-    return this.databaseService.targetCompany.create({
+  async createExecutiveCompany(body: CreateExecutiveCompanyBodyDto) {
+    return this.databaseService.executiveCompany.create({
       data: { ...body },
     });
   }
 
-  async getTargetCompanyList(query: GetTargetCompanyListQueryDto) {
+  async getExecutiveCompanyList(query: GetExecutiveCompanyListQueryDto) {
     const { page, pageSize, take, skip } = validatePaginationQueryDto(query);
 
-    const where: Prisma.TargetCompanyWhereInput = {
+    const where: Prisma.ExecutiveCompanyWhereInput = {
       ...(query.id && { id: query.id }),
-      ...(query.userId && { userId: query.userId }),
+      ...(query.businessId && { businessId: query.businessId }),
       ...(query.name && { name: query.name }),
       ...(query.geography && { geography: query.geography }),
     };
@@ -37,49 +37,49 @@ export class TargetCompanyService {
     }
 
     const [data, total] = await Promise.all([
-      this.databaseService.targetCompany.findMany({
+      this.databaseService.executiveCompany.findMany({
         where,
         take,
         skip,
         ...(query.lastItemId && { cursor: { id: query.lastItemId } }),
       }),
-      this.databaseService.targetCompany.count({ where }),
+      this.databaseService.executiveCompany.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / pageSize);
     return { data, pagination: { page, pageSize, total, totalPages } };
   }
 
-  async getTargetCompanyDetail(id: number) {
-    const targetCompany = await this.databaseService.targetCompany.findFirst({
+  async getExecutiveCompanyDetail(id: number) {
+    const executiveCompany = await this.databaseService.executiveCompany.findFirst({
       where: { id },
     });
-    if (!targetCompany) {
+    if (!executiveCompany) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return targetCompany;
+    return executiveCompany;
   }
 
-  async updateTargetCompany(id: number, body: UpdateTargetCompanyBodyDto) {
-    const targetCompany = await this.databaseService.targetCompany.findFirst({
+  async updateExecutiveCompany(id: number, body: UpdateExecutiveCompanyBodyDto) {
+    const executiveCompany = await this.databaseService.executiveCompany.findFirst({
       where: { id },
     });
-    if (!targetCompany) {
+    if (!executiveCompany) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return this.databaseService.targetCompany.update({
+    return this.databaseService.executiveCompany.update({
       where: { id },
       data: { ...body },
     });
   }
 
-  async deleteTargetCompany(id: number) {
-    const targetCompany = await this.databaseService.targetCompany.findFirst({
+  async deleteExecutiveCompany(id: number) {
+    const executiveCompany = await this.databaseService.executiveCompany.findFirst({
       where: { id },
     });
-    if (!targetCompany) {
+    if (!executiveCompany) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return this.databaseService.targetCompany.delete({ where: { id } });
+    return this.databaseService.executiveCompany.delete({ where: { id } });
   }
 }
