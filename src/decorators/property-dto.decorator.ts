@@ -54,7 +54,8 @@ function PropertyDto(options?: DtoPropertyOptions) {
   ];
 
   // required or optional?
-  if (propertyOptions.required) {
+  // file is not going through body. It used multer instead (do not validate)
+  if (propertyOptions.required && !isFile) {
     decorators.push(IsNotEmpty({ each: isArray }));
   } else {
     decorators.push(IsOptional({ each: isArray }));

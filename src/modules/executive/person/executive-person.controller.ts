@@ -84,6 +84,40 @@ export class ExecutivePersonController {
     return this.personService.getExecutivePersonList(query);
   }
 
+  @Get('department')
+  @SwaggerApiDocument({
+    response: {
+      type: GetExecutivePersonListResponseDto,
+      isPagination: true,
+    },
+    operation: {
+      operationId: `getExecutivePersonDepartment`,
+      summary: `Api getExecutivePersonDepartment`,
+    },
+  })
+  async getExecutivePersonDepartment(
+    @Query() query: GetExecutivePersonListQueryDto,
+  ): Promise<PaginationResponseDto<GetExecutivePersonListResponseDto>> {
+    return this.personService.getExecutivePersonDepartment(query);
+  }
+
+  @Get('position')
+  @SwaggerApiDocument({
+    response: {
+      type: GetExecutivePersonDetailResponseDto,
+      isPagination: true,
+    },
+    operation: {
+      operationId: `getExecutivePersonPosition`,
+      summary: `Api getExecutivePersonPosition`,
+    },
+  })
+  async getExecutivePersonPosition(
+    @Query() query: GetExecutivePersonListQueryDto,
+  ): Promise<PaginationResponseDto<GetExecutivePersonListResponseDto>> {
+    return this.personService.getExecutivePersonPosition(query);
+  }
+
   @Post(`upload`)
   @SwaggerApiDocument({
     response: {

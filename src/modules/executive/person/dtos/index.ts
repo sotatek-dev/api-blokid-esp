@@ -181,8 +181,24 @@ export class CreateExecutivePersonBodyDto {
     type: Number,
     required: false,
     validated: true,
+    example: 1,
   })
   targetCompanyId: number;
+
+  @PropertyDto({
+    type: EnrichmentStatus,
+    required: false,
+    validated: true,
+    structure: 'enum',
+  })
+  enrichmentStatus: EnrichmentStatus;
+
+  @PropertyDto({
+    type: Number,
+    required: false,
+    validated: true,
+  })
+  intentScore: number;
 }
 
 export class CreateExecutivePersonResponseDto extends BaseExecutivePersonResponseDto {}
@@ -235,3 +251,5 @@ export class EnrichPeopleBodyDto {
   })
   targetCompanyId: number;
 }
+
+// ****************************** getExecutivePersonDepartment ******************************

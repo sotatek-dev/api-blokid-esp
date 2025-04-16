@@ -101,7 +101,7 @@ model ExecutivePerson {
   position           String?
   department         String?
   enrichmentStatus   EnrichmentStatus @default(NoEnrichment)
-  intentScore        Float?
+  intentScore        Float            @default(0)
   targetCompanyId    Int?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -157,8 +157,8 @@ model Footprint {
   element       FootprintElement
   description   String //
   priorityLevel PriorityLevel
-  intentScore   Float?
-  confidence    Float?
+  intentScore   Float            @default(0)
+  confidence    Float            @default(0)
   personId      Int
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -175,7 +175,7 @@ model IdentifyResolution {
   ip                String?
   uid               String?
   deviceFingerprint String?
-  confidence        Float?
+  confidence        Float     @default(0)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
@@ -186,10 +186,10 @@ model IdentifyResolution {
 model Campaign {
   id                Int              @id @default(autoincrement())
   campaignName      String
-  budget            Float?
-  spend             Float?
+  budget            Float
+  spend             Float            @default(0)
   remaining         Float
-  reached           Float // percentage
+  reached           Float            @default(0) // percentage
   startDate         DateTime
   endDate           DateTime?
   status            CampaignStatus

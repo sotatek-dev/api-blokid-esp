@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ERROR_RESPONSE } from 'src/common/const';
+import { csvFileMimeTypes } from 'src/common/const/file.const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
@@ -92,8 +93,25 @@ export class ExecutivePersonService {
     return this.databaseService.executivePerson.delete({ where: { id } });
   }
 
-  uploadExecutive(body: UploadExecutiveBodyDto) {
-    return undefined;
+  async uploadExecutive(body: UploadExecutiveBodyDto) {
+    const { file } = body;
+
+    if (!file) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.UNPROCESSABLE_ENTITY,
+        message: 'File is required',
+      });
+    }
+    // only accept csv files
+    if (!csvFileMimeTypes.includes(file.mimetype)) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.INVALID_FILES,
+        message: 'File type is not supported',
+        details: { accept: csvFileMimeTypes, actual: file.mimetype },
+      });
+    }
+
+    return body as any;
   }
 
   enrichPeople(body: EnrichPeopleBodyDto) {
