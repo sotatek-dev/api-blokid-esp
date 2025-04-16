@@ -89,7 +89,7 @@ model ExecutiveUpload {
   deletedAt   DateTime?
 }
 
-// Personal who create by target upload (csv)
+// Personal who created by target upload (csv)
 model ExecutivePerson {
   id                 Int              @id @default(autoincrement())
   firstName          String?

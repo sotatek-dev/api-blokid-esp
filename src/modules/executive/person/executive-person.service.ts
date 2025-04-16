@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
-import { MulterFile } from 'src/core/platform';
 import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
 import {
