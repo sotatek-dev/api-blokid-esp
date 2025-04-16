@@ -75,18 +75,23 @@ model ExecutiveCompany {
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
 
-  Campaign Campaign[]
-  Business Business?  @relation(fields: [businessId], references: [id])
+  Campaign        Campaign[]
+  Business        Business?         @relation(fields: [businessId], references: [id])
+  ExecutiveUpload ExecutiveUpload[]
 }
 
 model ExecutiveUpload {
-  id          Int       @id @default(autoincrement())
-  fileName    String
-  quantity    Int
-  storageLink String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id                 Int       @id @default(autoincrement())
+  fileName           String
+  filePath           String
+  quantity           Int
+  storageLink        String?
+  executiveCompanyId Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  ExecutiveCompany ExecutiveCompany @relation(fields: [executiveCompanyId], references: [id])
 }
 
 // Personal who created by target upload (csv)

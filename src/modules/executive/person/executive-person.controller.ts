@@ -17,20 +17,25 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { ServerConfig } from 'server-config/index';
-import { xlsxFileMimeTypes } from 'src/common/const/file.const';
+import { csvFileMimeTypes } from 'src/common/const/file.const';
 import { AccessRole } from 'src/common/enums';
 import { BodyContentType, MulterFile } from 'src/core/platform';
 import { PaginationResponseDto } from 'src/core/platform/dtos';
 import { RoleBaseAccessControl, SwaggerApiDocument } from 'src/decorators';
 import { AuthGuard } from 'src/guards';
+import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import {
   CreateExecutivePersonBodyDto,
   CreateExecutivePersonResponseDto,
   EnrichPeopleBodyDto,
   EnrichPeopleResponseDto,
+  GetExecutivePersonDepartmentQueryDto,
+  GetExecutivePersonDepartmentResponseDto,
   GetExecutivePersonDetailResponseDto,
   GetExecutivePersonListQueryDto,
   GetExecutivePersonListResponseDto,
+  GetExecutivePersonPositionQueryDto,
+  GetExecutivePersonPositionResponseDto,
   UpdateExecutivePersonBodyDto,
   UpdateExecutivePersonResponseDto,
   UploadExecutiveBodyDto,
@@ -84,40 +89,6 @@ export class ExecutivePersonController {
     return this.personService.getExecutivePersonList(query);
   }
 
-  @Get('department')
-  @SwaggerApiDocument({
-    response: {
-      type: GetExecutivePersonListResponseDto,
-      isPagination: true,
-    },
-    operation: {
-      operationId: `getExecutivePersonDepartment`,
-      summary: `Api getExecutivePersonDepartment`,
-    },
-  })
-  async getExecutivePersonDepartment(
-    @Query() query: GetExecutivePersonListQueryDto,
-  ): Promise<PaginationResponseDto<GetExecutivePersonListResponseDto>> {
-    return this.personService.getExecutivePersonDepartment(query);
-  }
-
-  @Get('position')
-  @SwaggerApiDocument({
-    response: {
-      type: GetExecutivePersonDetailResponseDto,
-      isPagination: true,
-    },
-    operation: {
-      operationId: `getExecutivePersonPosition`,
-      summary: `Api getExecutivePersonPosition`,
-    },
-  })
-  async getExecutivePersonPosition(
-    @Query() query: GetExecutivePersonListQueryDto,
-  ): Promise<PaginationResponseDto<GetExecutivePersonListResponseDto>> {
-    return this.personService.getExecutivePersonPosition(query);
-  }
-
   @Post(`upload`)
   @SwaggerApiDocument({
     response: {
@@ -128,7 +99,10 @@ export class ExecutivePersonController {
     operation: {
       operationId: `uploadExecutive`,
       summary: `Api uploadExecutive`,
-      description: `Accepts mimetype: ${xlsxFileMimeTypes}`,
+      description: `Upload csv file content executive for enrichment<br>
+      <li>Accepts mimetype: ${csvFileMimeTypes.join(', ')}</li>
+      <li>Headers: ${EXECUTIVE_CSV_HEADERS.join(', ')}</li>
+      `,
     },
   })
   @UseInterceptors(
@@ -158,6 +132,38 @@ export class ExecutivePersonController {
     @Body() body: EnrichPeopleBodyDto,
   ): Promise<EnrichPeopleResponseDto> {
     return this.personService.enrichPeople(body);
+  }
+
+  @Get('departments')
+  @SwaggerApiDocument({
+    response: {
+      type: GetExecutivePersonDepartmentResponseDto,
+    },
+    operation: {
+      operationId: `getExecutivePersonDepartment`,
+      summary: `Api getExecutivePersonDepartment`,
+    },
+  })
+  async getExecutivePersonDepartment(
+    @Query() query: GetExecutivePersonDepartmentQueryDto,
+  ): Promise<GetExecutivePersonDepartmentResponseDto> {
+    return this.personService.getExecutivePersonDepartment(query);
+  }
+
+  @Get('positions')
+  @SwaggerApiDocument({
+    response: {
+      type: GetExecutivePersonPositionResponseDto,
+    },
+    operation: {
+      operationId: `getExecutivePersonPosition`,
+      summary: `Api getExecutivePersonPosition`,
+    },
+  })
+  async getExecutivePersonPosition(
+    @Query() query: GetExecutivePersonPositionQueryDto,
+  ): Promise<GetExecutivePersonPositionResponseDto> {
+    return this.personService.getExecutivePersonPosition(query);
   }
 
   @Get(':id')
