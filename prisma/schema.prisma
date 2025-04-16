@@ -38,7 +38,7 @@ model User {
   password           String
   fullName           String?
   phoneNumber        String?
-  status             UserStatus   @default(InActive)
+  status             UserStatus   @default(Inactive)
   dob                DateTime?
   role               UserRole
   gender             Gender       @default(Other)
@@ -50,6 +50,198 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   deletedAt          DateTime?
+
+  Business Business?
+}
+
+model Business {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  TargetCompany ExecutiveCompany[]
+  User          User               @relation(fields: [userId], references: [id])
+}
+
+model ExecutiveCompany {
+  id         Int       @id @default(autoincrement())
+  businessId Int?
+  name       String
+  geography  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  Campaign Campaign[]
+  Business Business?  @relation(fields: [businessId], references: [id])
+}
+
+model ExecutiveUpload {
+  id          Int       @id @default(autoincrement())
+  fileName    String
+  quantity    Int
+  storageLink String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+// Personal who create by target upload (csv)
+model ExecutivePerson {
+  id                 Int              @id @default(autoincrement())
+  firstName          String?
+  lastName           String?
+  fullName           String?
+  linkedinProfileUrl String?
+  email              String?
+  phoneNumber        String?
+  position           String?
+  department         String?
+  enrichmentStatus   EnrichmentStatus @default(NoEnrichment)
+  intentScore        Float?
+  targetCompanyId    Int?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+
+  Footprint          Footprint[]
+  Enrichment         PersonEnrichment[]
+  EnrichmentRaw      EnrichmentRaw[]
+  IdentifyResolution IdentifyResolution[]
+}
+
+model PersonEnrichment {
+  id             Int       @id @default(autoincrement())
+  fullName       String?
+  gender         String?
+  title          String?
+  email          String?
+  emailStatus    String?
+  linkedin       String?
+  phoneNumber    String?
+  address        String?
+  company        String?
+  department     String?
+  position       String?
+  companyName    String?
+  targetPersonId Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  TargetPerson ExecutivePerson @relation(fields: [targetPersonId], references: [id])
+}
+
+// save enrichment data from peopledatalab
+// system read only
+model EnrichmentRaw {
+  id             Int            @id @default(autoincrement())
+  targetPersonId Int
+  targetList     Json
+  request        Json
+  response       Json?
+  type           EnrichmentType
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  TargetPerson ExecutivePerson? @relation(fields: [targetPersonId], references: [id])
+}
+
+model Footprint {
+  id            Int              @id @default(autoincrement())
+  action        FootprintAction
+  element       FootprintElement
+  description   String //
+  priorityLevel PriorityLevel
+  intentScore   Float?
+  confidence    Float?
+  personId      Int
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  deletedAt     DateTime?
+
+  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
+}
+
+model IdentifyResolution {
+  id                Int       @id @default(autoincrement())
+  personId          Int
+  email             String?
+  emailHash         String?
+  ip                String?
+  uid               String?
+  deviceFingerprint String?
+  confidence        Float?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
+}
+
+model Campaign {
+  id                Int              @id @default(autoincrement())
+  campaignName      String
+  budget            Float?
+  spend             Float?
+  remaining         Float
+  reached           Float // percentage
+  startDate         DateTime
+  endDate           DateTime?
+  status            CampaignStatus
+  objective         CampainObjective
+  description       String?
+  geography         Json // string[]
+  role              Json // string[]
+  targetCompanyId   Int
+  campaignMetricId  Int              @unique
+  isBugdetByChannel Boolean          @default(false) // maybe enum
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
+
+  CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
+  TargetCompany    ExecutiveCompany   @relation(fields: [targetCompanyId], references: [id])
+  CampaignStrategy CampaignStrategy[]
+}
+
+model CampaignStrategy {
+  id               Int                     @id @default(autoincrement())
+  status           CampaignStatus
+  channel          CampaignStrategyChannel
+  budget           Float
+  format           StrategyAdFormat // single image, single video
+  creativeLink     String? //  image link
+  content          String?
+  startDate        DateTime?
+  finishDate       DateTime?
+  campaignId       Int
+  campaignMetricId Int                     @unique
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  deletedAt        DateTime?
+
+  Campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  CampaignMetric CampaignMetric @relation(fields: [campaignMetricId], references: [id])
+}
+
+model CampaignMetric {
+  id            Int       @id @default(autoincrement())
+  spend         Float?
+  account       Int?
+  impressions   Int?
+  avgTimeOnSite Float?
+  performance   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  Campaign         Campaign?
+  CampaignStrategy CampaignStrategy?
 }
 
 // -------------------------------- Enums -------------------------------
@@ -61,7 +253,7 @@ enum UserRole {
 
 enum UserStatus {
   Active
-  InActive
+  Inactive
   Closed
 }
 
@@ -74,4 +266,71 @@ enum Gender {
 enum UserLanguage {
   En
   Vn
+}
+
+enum FootprintAction {
+  Click
+  Download
+  View
+  SubmitForm
+  Visit
+  Share
+}
+
+enum EnrichmentType {
+  Person
+  Company
+}
+
+enum EmailStatus {
+  Valid
+  Invalid
+}
+
+enum EnrichmentStatus {
+  InProgress
+  Completed
+  Failed
+  NoEnrichment
+}
+
+enum PriorityLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum FootprintElement {
+  Ads
+  Button
+  Link
+  Form
+  Page
+  Content
+}
+
+enum CampaignStatus {
+  Active
+  Suspended
+  WaitingToLaunch
+  Completed
+  Paused
+  Cancelled
+}
+
+enum CampainObjective {
+  Nurture
+  Engagement
+  Awareness
+}
+
+enum CampaignStrategyChannel {
+  GoogleAds
+  LinkedIn
+  DV360
+}
+
+enum StrategyAdFormat {
+  SingleImage
+  SingleVideo
 }

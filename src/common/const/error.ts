@@ -116,6 +116,16 @@ export const ERROR_RESPONSE = {
     errorCode: 22,
     message: `Request timeout`,
   },
+  RESOURCE_NOT_FOUND: {
+    statusCode: HttpStatus.NOT_FOUND,
+    errorCode: 23,
+    message: `RESOURCE_NOT_FOUND`,
+  },
+  INVALID_FILES: {
+    statusCode: HttpStatus.BAD_REQUEST,
+    errorCode: 24,
+    message: `Invalid files`,
+  },
   /*------------------------------ Defined ERROR below ------------------------------*/
 };
 

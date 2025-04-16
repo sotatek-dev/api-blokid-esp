@@ -29,6 +29,7 @@ const MAIN_CONFIG = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   // File
   DISK_STORAGE_PATH: process.env.DISK_STORAGE_PATH,
+  EXECUTIVE_STORAGE_PATH: process.env.EXECUTIVE_STORAGE_PATH,
   BACKUP_PATH: process.env.DISK_STORAGE_PATH,
   // Prisma
   PRISMA_LOG_LEVEL: process.env.PRISMA_LOG_LEVEL?.split(','),

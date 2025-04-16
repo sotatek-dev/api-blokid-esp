@@ -14,26 +14,38 @@ class GenerateNestjsResource {
     Dto: 'Dto',
   };
   private readonly parser = new TypescriptParser();
-  private prismaImport: any;
-  private prismaEnums: string[];
-  private modelProperties: PropertyDeclaration[];
+  private prismaImport: any = [];
+  private prismaEnums: string[] = [];
+  private modelProperties: PropertyDeclaration[] = [];
 
   async run() {
-    await this.parseOptions();
-    // prepare
-    await this.prepare();
-    // write
     try {
-      if (this.options.userSelect === this.USER_SELECT.Dto) {
-        return Promise.all([await this.writeDtosDirectory()]);
+      await this.parseOptions();
+      // prepare
+      await this.prepare();
+      // write
+      const promises = [];
+      switch (this.options.userSelect) {
+        case this.USER_SELECT.CompleteModule:
+          return Promise.all([
+            this.writeModuleFile(),
+            this.writeServiceFile(),
+            this.writeControllerFile(),
+            this.writeDtosDirectory(),
+            this.writeModuleIndexFile(),
+          ]);
+        case this.USER_SELECT.EmptyModule:
+          return Promise.all([
+            this.writeModuleFile(),
+            this.writeServiceFile(),
+            this.writeControllerFile(),
+            this.writeModuleIndexFile(),
+          ]);
+        case this.USER_SELECT.Dto:
+          return this.writeDtosDirectory();
+        default:
       }
-      await Promise.all([
-        this.writeModuleFile(),
-        this.writeServiceFile(),
-        this.writeControllerFile(),
-        this.writeDtosDirectory(),
-        this.writeModuleIndexFile(),
-      ]);
+
     } catch (error) {
       await fs.rmdir(this.options.modulePath);
     }
@@ -43,9 +55,7 @@ class GenerateNestjsResource {
     const prismaDtoFilepath = `prisma/dtos/${this.options.modelFilename}.ts`;
     const isExist = fs.existsSync(prismaDtoFilepath);
     if (!isExist) {
-      throw new ValidationError(
-        `Dto file for model ${this.options.modelName} not found in prisma/dtos. Please run npx prisma generate`,
-      );
+      return;
     }
     const parse: any = await this.parser.parseFile(prismaDtoFilepath, '.');
     this.modelProperties = parse.declarations[0].properties.filter(
@@ -278,14 +288,12 @@ export * from './${nameKebab}.service';
   private getModuleContent() {
     const name = this.options.moduleName;
     const nameKebab = this.options.moduleNameKebab;
-    const importsContent = `[${this.options.userSelect === this.USER_SELECT.CompleteModule ? `DatabaseModule` : ''}]`;
     return `import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/modules/base/database';
 import { ${name}Controller } from './${nameKebab}.controller';
 import { ${name}Service } from './${nameKebab}.service';
 
 @Module({
-  imports: ${importsContent},
+  imports: [],
   controllers: [${name}Controller],
   providers: [${name}Service],
   exports: [${name}Service],

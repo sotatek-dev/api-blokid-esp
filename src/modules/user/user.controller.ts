@@ -53,7 +53,7 @@ export class UserController {
   @Get()
   @SwaggerApiDocument({
     response: {
-      type: GetUserDetailResponseDto,
+      type: GetUserListResponseDto,
       isPagination: true,
     },
     operation: {

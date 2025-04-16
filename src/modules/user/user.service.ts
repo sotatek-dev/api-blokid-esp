@@ -76,12 +76,18 @@ export class UserService {
   async getUserDetail(id: number) {
     const user = await this.databaseService.user.findFirst({
       where: { id },
-      select: USER_DEFAULT_SELECT,
+      select: {
+        ...USER_DEFAULT_SELECT,
+        Business: true,
+      },
     });
     if (!user) {
       throw new ServerException(ERROR_RESPONSE.USER_NOT_FOUND);
     }
-    return user;
+    const ExecutiveCompany = await this.databaseService.executiveCompany.findMany({
+      where: { businessId: user.Business.id },
+    });
+    return { ...user, ExecutiveCompany };
   }
 
   async updateUser(id: number, body: UpdateUserBodyDto) {

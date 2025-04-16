@@ -22,7 +22,8 @@ const SERVER_CONFIG_DEFAULT = {
   REDIS_PORT: 6379,
   REDIS_PASSWORD: undefined,
   TZ: 'UTC',
-  DISK_STORAGE_PATH: '/tmp/nestjs/uploads',
+  DISK_STORAGE_PATH: 'uploads',
+  EXECUTIVE_STORAGE_PATH: 'uploads/executive',
   BACKUP_PATH: 'prisma/backups',
   PRISMA_LOG_LEVEL: ['error', 'warn', 'info'],
 };
