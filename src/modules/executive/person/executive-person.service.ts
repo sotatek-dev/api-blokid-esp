@@ -10,6 +10,7 @@ import {
   EnrichPeopleBodyDto,
   GetExecutivePersonListQueryDto,
   UpdateExecutivePersonBodyDto,
+  UploadExecutiveBodyDto,
 } from './dtos';
 
 @Injectable()
@@ -18,7 +19,7 @@ export class ExecutivePersonService {
 
   async createExecutivePerson(body: CreateExecutivePersonBodyDto) {
     return this.databaseService.executivePerson.create({
-      data: { ...body },
+      data: { ...body, fullName: `${body.firstName} ${body.lastName}` },
     });
   }
 
@@ -92,7 +93,7 @@ export class ExecutivePersonService {
     return this.databaseService.executivePerson.delete({ where: { id } });
   }
 
-  uploadExecutive(file: MulterFile) {
+  uploadExecutive(body: UploadExecutiveBodyDto) {
     return undefined;
   }
 

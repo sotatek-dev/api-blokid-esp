@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { EnrichmentStatus } from '@prisma/client';
+import { MulterFile } from 'src/core/platform';
 import { PaginationQueryDto } from 'src/core/platform/dtos';
 import { PropertyDto } from 'src/decorators';
 
@@ -205,7 +206,7 @@ export class UploadExecutiveBodyDto {
     required: true,
     validated: true,
   })
-  file: any;
+  file: MulterFile;
 
   @PropertyDto({
     type: Number,

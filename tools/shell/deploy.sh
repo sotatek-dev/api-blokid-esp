@@ -29,7 +29,7 @@ function deploy() {
   # remove all Docker images except the most recent 5
   sshpass -p "$password" rsync -avz Makefile "$username"@"$serverAddress":$DESTINATION/Makefile
   sshpass -p "$password" rsync -avz docker-compose.yml "$username"@"$serverAddress":$DESTINATION/docker-compose.yml
-  sshpass -p "$password" rsync -avz --exclude-from='.gitignore' ./ "$username"@"$serverAddress":$DESTINATION
+  sshpass -p "$password" rsync -avz --delete --exclude-from='.gitignore' ./ "$username"@"$serverAddress":$DESTINATION
   sshpass -p "$password" ssh "$username"@"$serverAddress" "make build-image --directory=$DESTINATION \
   gitUserName='$gitUserName' \
   gitUserEmail='$gitUserEmail' \

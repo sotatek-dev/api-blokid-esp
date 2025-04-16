@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import 'dotenv/config.js';
-import { ServerConfig } from 'src/core/config';
+import { ServerConfig } from 'server-config/index';
 
 (async function seed() {
   if (!ServerConfig.isProductionEnv()) {

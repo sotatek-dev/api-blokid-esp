@@ -45,7 +45,7 @@ import { ExecutivePersonService } from './executive-person.service';
 @ApiBearerAuth()
 export class ExecutivePersonController {
   private static readonly storage = diskStorage({
-    destination: ServerConfig.get().DISK_STORAGE_PATH,
+    destination: ServerConfig.get().EXECUTIVE_STORAGE_PATH,
   });
 
   constructor(private readonly personService: ExecutivePersonService) {}
@@ -104,8 +104,9 @@ export class ExecutivePersonController {
   )
   async uploadExecutive(
     @UploadedFile() file: MulterFile,
+    @Body() body: UploadExecutiveBodyDto,
   ): Promise<UploadExecutiveResponseDto> {
-    return this.personService.uploadExecutive(file);
+    return this.personService.uploadExecutive({ ...body, file });
   }
 
   @Post(`enrichments`)
