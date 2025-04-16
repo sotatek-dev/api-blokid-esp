@@ -13,5 +13,5 @@ export const EXECUTIVE_COLUMN_POSITION = {
   email: 2,
   linkedIn: 3,
   phoneNumber: 4,
-  department: 5,
+  position: 5,
 };

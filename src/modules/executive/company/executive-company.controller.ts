@@ -55,7 +55,7 @@ export class ExecutiveCompanyController {
   @Get()
   @SwaggerApiDocument({
     response: {
-      type: GetExecutiveCompanyDetailResponseDto,
+      type: GetExecutiveCompanyListResponseDto,
       isPagination: true,
     },
     operation: {

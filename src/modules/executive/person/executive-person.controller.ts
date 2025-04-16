@@ -9,26 +9,16 @@ import {
   Post,
   Put,
   Query,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { ServerConfig } from 'server-config/index';
-import { csvFileMimeTypes } from 'src/common/const/file.const';
 import { AccessRole } from 'src/common/enums';
-import { BodyContentType, MulterFile } from 'src/core/platform';
 import { PaginationResponseDto } from 'src/core/platform/dtos';
 import { RoleBaseAccessControl, SwaggerApiDocument } from 'src/decorators';
 import { AuthGuard } from 'src/guards';
-import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import {
   CreateExecutivePersonBodyDto,
   CreateExecutivePersonResponseDto,
-  EnrichPeopleBodyDto,
-  EnrichPeopleResponseDto,
   GetExecutivePersonDepartmentQueryDto,
   GetExecutivePersonDepartmentResponseDto,
   GetExecutivePersonDetailResponseDto,
@@ -38,8 +28,6 @@ import {
   GetExecutivePersonPositionResponseDto,
   UpdateExecutivePersonBodyDto,
   UpdateExecutivePersonResponseDto,
-  UploadExecutiveBodyDto,
-  UploadExecutiveResponseDto,
 } from './dtos';
 import { ExecutivePersonService } from './executive-person.service';
 
@@ -49,10 +37,6 @@ import { ExecutivePersonService } from './executive-person.service';
 @RoleBaseAccessControl([AccessRole.Admin])
 @ApiBearerAuth()
 export class ExecutivePersonController {
-  private static readonly storage = diskStorage({
-    destination: ServerConfig.get().EXECUTIVE_STORAGE_PATH,
-  });
-
   constructor(private readonly personService: ExecutivePersonService) {}
 
   @Post()
@@ -75,7 +59,7 @@ export class ExecutivePersonController {
   @Get()
   @SwaggerApiDocument({
     response: {
-      type: GetExecutivePersonDetailResponseDto,
+      type: GetExecutivePersonListResponseDto,
       isPagination: true,
     },
     operation: {
@@ -87,51 +71,6 @@ export class ExecutivePersonController {
     @Query() query: GetExecutivePersonListQueryDto,
   ): Promise<PaginationResponseDto<GetExecutivePersonListResponseDto>> {
     return this.personService.getExecutivePersonList(query);
-  }
-
-  @Post(`upload`)
-  @SwaggerApiDocument({
-    response: {
-      type: UploadExecutiveResponseDto,
-    },
-    contentType: [BodyContentType.MultipartFormData],
-    body: { type: UploadExecutiveBodyDto, required: true },
-    operation: {
-      operationId: `uploadExecutive`,
-      summary: `Api uploadExecutive`,
-      description: `Upload csv file content executive for enrichment<br>
-      <li>Accepts mimetype: ${csvFileMimeTypes.join(', ')}</li>
-      <li>Headers: ${EXECUTIVE_CSV_HEADERS.join(', ')}</li>
-      `,
-    },
-  })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: ExecutivePersonController.storage,
-    }),
-  )
-  async uploadExecutive(
-    @UploadedFile() file: MulterFile,
-    @Body() body: UploadExecutiveBodyDto,
-  ): Promise<UploadExecutiveResponseDto> {
-    return this.personService.uploadExecutive({ ...body, file });
-  }
-
-  @Post(`enrichments`)
-  @SwaggerApiDocument({
-    response: {
-      type: EnrichPeopleResponseDto,
-    },
-    body: { type: EnrichPeopleBodyDto, required: true },
-    operation: {
-      operationId: `enrichPeople`,
-      summary: `Api enrichPeople`,
-    },
-  })
-  async enrichPeople(
-    @Body() body: EnrichPeopleBodyDto,
-  ): Promise<EnrichPeopleResponseDto> {
-    return this.personService.enrichPeople(body);
   }
 
   @Get('departments')
