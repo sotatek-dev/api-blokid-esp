@@ -385,7 +385,7 @@ export class ${name}Controller {
   @Get()
   @SwaggerApiDocument({
     response: {
-      type: Get${name}DetailResponseDto,
+      type: Get${name}ListResponseDto,
       isPagination: true,
     },
     operation: {
