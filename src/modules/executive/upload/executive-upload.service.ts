@@ -50,8 +50,7 @@ export class ExecutiveUploadService {
       }
     });
     // validate csv content
-    const emails: string[] = [];
-    const fullNames: string[] = [];
+    const conditions: Prisma.ExecutivePersonWhereInput[] = [];
     _.forEach(csvContent, (row) => {
       const email = row[EXECUTIVE_COLUMN_POSITION.email];
       const linkedIn = row[EXECUTIVE_COLUMN_POSITION.linkedIn];
@@ -72,9 +71,23 @@ export class ExecutiveUploadService {
           details: { row, linkedIn: row[EXECUTIVE_COLUMN_POSITION.linkedIn] },
         });
       }
-      emails.push(email);
-      fullNames.push(fullName);
+      conditions.push({ email, fullName });
     });
+
+    const duplicated = await this.databaseService.executivePerson.findMany({
+      where: { OR: [...conditions] },
+    });
+
+    // check for duplicated email and fullName, 10000 records = 5s
+    if (duplicated?.length > 0) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.INVALID_FILES,
+        message: 'Invalid csv content. Duplicated email or fullName',
+        details: {
+          duplicated: duplicated.map(({ email, fullName }) => ({ email, fullName })),
+        },
+      });
+    }
 
     // todo: only in MVP
     const userId = AsyncStorage.get('userId') as number;
