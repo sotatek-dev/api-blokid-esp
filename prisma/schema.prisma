@@ -87,13 +87,16 @@ model ExecutiveUpload {
   filePath           String
   quantity           Int
   storageLink        String?
-  // type ExecutiveUploadType
+  isSaved            Boolean   @default(false)
+  isEnriched         Boolean   @default(false)
+  // type ExecutiveUploadType // person or company
   executiveCompanyId Int
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
 
-  ExecutiveCompany ExecutiveCompany @relation(fields: [executiveCompanyId], references: [id])
+  ExecutiveCompany ExecutiveCompany  @relation(fields: [executiveCompanyId], references: [id])
+  ExecutivePerson  ExecutivePerson[]
 }
 
 // Personal who created by target upload (csv)
@@ -108,6 +111,7 @@ model ExecutivePerson {
   position           String? // update by enrichment
   department         String? // update by enrichment
   executiveCompanyId Int
+  executiveUploadId  Int?
   enrichmentStatus   EnrichmentStatus @default(NoEnrichment)
   intentScore        Float            @default(0)
   createdAt          DateTime         @default(now())
@@ -119,8 +123,9 @@ model ExecutivePerson {
   EnrichmentRaw      EnrichmentRaw[]
   IdentifyResolution IdentifyResolution[]
   ExecutiveCompany   ExecutiveCompany     @relation(fields: [executiveCompanyId], references: [id])
+  ExecutiveUpload    ExecutiveUpload?     @relation(fields: [executiveUploadId], references: [id])
 
-  @@unique([email, fullName])
+  @@unique([email, fullName, executiveCompanyId])
 }
 
 model PersonEnrichment {

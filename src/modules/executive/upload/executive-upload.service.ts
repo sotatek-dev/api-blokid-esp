@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { isEmail, isURL } from 'class-validator';
+import { isEmail, isEmpty, isURL } from 'class-validator';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { csvFileMimeTypes } from 'src/common/const/file.const';
 import { parseCsv } from 'src/common/helpers/csv';
@@ -13,15 +13,23 @@ import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import { EXECUTIVE_COLUMN_POSITION } from 'src/modules/executive/executive.types';
 import {
   CreateExecutiveUploadBodyDto,
+  CreateExecutiveUploadQueryDto,
+  EnrichExecutiveUploadBodyDto,
   GetExecutiveUploadListQueryDto,
   SaveExecutiveUploadBodyDto,
 } from './dtos';
 
 @Injectable()
 export class ExecutiveUploadService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    // private readonly peopleDataLabService: PeopleDataLabService,
+  ) {}
 
-  async createExecutiveUpload(body: CreateExecutiveUploadBodyDto) {
+  async createExecutiveUpload(
+    query: CreateExecutiveUploadQueryDto,
+    body: CreateExecutiveUploadBodyDto,
+  ) {
     const { file } = body;
 
     if (!file) {
@@ -64,7 +72,7 @@ export class ExecutiveUploadService {
           details: { row, email },
         });
       }
-      if (!isURL(linkedIn)) {
+      if (!isEmpty(linkedIn) && !isURL(linkedIn)) {
         throw new ServerException({
           ...ERROR_RESPONSE.INVALID_FILES,
           message: 'Invalid csv content. LinkedIn URL is invalid',
@@ -170,6 +178,12 @@ export class ExecutiveUploadService {
     if (!upload) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
+    if (upload.isSaved) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.BAD_REQUEST,
+        message: 'Executive upload is already saved',
+      });
+    }
 
     const executives: Prisma.ExecutivePersonCreateManyInput[] = [];
     const { filePath } = upload;
@@ -185,6 +199,7 @@ export class ExecutiveUploadService {
         phoneNumber: row[EXECUTIVE_COLUMN_POSITION.phoneNumber],
         linkedinProfileUrl: row[EXECUTIVE_COLUMN_POSITION.linkedIn],
         position: row[EXECUTIVE_COLUMN_POSITION.position],
+        executiveUploadId: upload.id,
         executiveCompanyId: upload.ExecutiveCompany.id,
       });
     });
@@ -192,6 +207,30 @@ export class ExecutiveUploadService {
     const persons = await this.databaseService.executivePerson.createMany({
       data: executives,
     });
+    await this.databaseService.executiveUpload.update({
+      where: { id: upload.id },
+      data: { isSaved: true },
+    });
+
     return { ...persons, expect: upload.quantity };
+  }
+
+  async enrichExecutiveUpload(body: EnrichExecutiveUploadBodyDto) {
+    const upload = await this.databaseService.executiveUpload.findFirst({
+      where: { id: body.id },
+      include: { ExecutiveCompany: true },
+    });
+    if (!upload) {
+      throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
+    }
+    if (!upload.isSaved) {
+      await this.saveExecutiveUpload({ id: upload.id });
+    }
+
+    const executives = await this.databaseService.executivePerson.findMany({
+      where: { executiveUploadId: upload.id },
+    });
+
+    return undefined;
   }
 }

@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class EnrichmentService {
-  constructor() {}
-}
+export class EnrichmentService {}

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -24,7 +25,10 @@ import { AuthGuard } from 'src/guards';
 import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import {
   CreateExecutiveUploadBodyDto,
+  CreateExecutiveUploadQueryDto,
   CreateExecutiveUploadResponseDto,
+  EnrichExecutiveUploadBodyDto,
+  EnrichExecutiveUploadResponseDto,
   GetExecutiveUploadDetailResponseDto,
   GetExecutiveUploadListQueryDto,
   GetExecutiveUploadListResponseDto,
@@ -68,9 +72,10 @@ export class ExecutiveUploadController {
   )
   async createExecutiveUpload(
     @UploadedFile() file: MulterFile,
+    @Query() query: CreateExecutiveUploadQueryDto,
     @Body() body: CreateExecutiveUploadBodyDto,
   ): Promise<CreateExecutiveUploadResponseDto> {
-    return this.executiveUploadService.createExecutiveUpload({ ...body, file });
+    return this.executiveUploadService.createExecutiveUpload(query, { ...body, file });
   }
 
   @Get()
@@ -107,7 +112,24 @@ export class ExecutiveUploadController {
     return this.executiveUploadService.saveExecutiveUpload(body);
   }
 
-  // @Get(':id')
+  @Post('enrich')
+  @SwaggerApiDocument({
+    response: {
+      type: EnrichExecutiveUploadResponseDto,
+    },
+    body: { type: EnrichExecutiveUploadBodyDto, required: true },
+    operation: {
+      operationId: `enrichExecutiveUpload`,
+      summary: `Api enrichExecutiveUpload`,
+    },
+  })
+  async enrichExecutiveUpload(
+    @Body() body: EnrichExecutiveUploadBodyDto,
+  ): Promise<EnrichExecutiveUploadResponseDto> {
+    return this.executiveUploadService.enrichExecutiveUpload(body);
+  }
+
+  @Get(':id')
   @SwaggerApiDocument({
     response: {
       type: GetExecutiveUploadDetailResponseDto,
@@ -123,7 +145,7 @@ export class ExecutiveUploadController {
     return this.executiveUploadService.getExecutiveUploadDetail(id);
   }
 
-  // @Delete(':id')
+  @Delete(':id')
   @SwaggerApiDocument({
     response: {
       status: HttpStatus.NO_CONTENT,

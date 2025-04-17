@@ -113,6 +113,17 @@ export class CreateExecutiveUploadBodyDto {
   targetCompanyId: number;
 }
 
+export class CreateExecutiveUploadQueryDto {
+  @PropertyDto({
+    type: Boolean,
+    required: false,
+    validated: true,
+    description: `Development only, ignore duplicate file`,
+    example: false,
+  })
+  ignoreDuplicate: boolean = false;
+}
+
 export class CreateExecutiveUploadResponseDto extends BaseExecutiveUploadResponseDto {}
 
 // ****************************** saveExecutiveUpload ******************************
@@ -127,3 +138,16 @@ export class SaveExecutiveUploadBodyDto {
 }
 
 export class SaveExecutiveUploadResponseDto {}
+
+// ****************************** enrichExecutiveUpload ******************************
+export class EnrichExecutiveUploadBodyDto {
+  @PropertyDto({
+    type: Number,
+    required: true,
+    validated: true,
+    description: `Upload file id`,
+  })
+  id: number;
+}
+
+export class EnrichExecutiveUploadResponseDto {}
