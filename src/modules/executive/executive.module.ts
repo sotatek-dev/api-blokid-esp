@@ -4,11 +4,12 @@ import {
   ExecutiveUploadController,
   ExecutiveUploadService,
 } from 'src/modules/executive/upload';
+import { FootprintModule } from 'src/modules/footprint';
 import { ExecutiveCompanyController, ExecutiveCompanyService } from './company';
 import { ExecutivePersonController, ExecutivePersonService } from './person';
 
 @Module({
-  imports: [PeopleDataLabModule],
+  imports: [PeopleDataLabModule, FootprintModule],
   controllers: [
     ExecutivePersonController,
     ExecutiveCompanyController,

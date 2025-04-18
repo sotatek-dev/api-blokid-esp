@@ -140,8 +140,5 @@ export class EnrichExecutiveUploadBodyDto {
 
 export class EnrichExecutiveUploadResponseDto {
   @PropertyDto()
-  enrichSuccess: number;
-
-  @PropertyDto()
-  enrichFail: number;
+  inProgress: number;
 }

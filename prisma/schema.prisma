@@ -109,8 +109,6 @@ model ExecutivePerson {
   linkedinProfileUrl String?
   email              String
   phoneNumber        String?
-  position           String? // update by enrichment
-  department         String? // update by enrichment
   executiveCompanyId Int
   executiveUploadId  Int?
   enrichmentStatus   EnrichmentStatus @default(NoEnrichment)
@@ -132,13 +130,11 @@ model PersonEnrichment {
   id                Int       @id @default(autoincrement())
   fullName          String?
   gender            String?
-  title             String?
   email             String?
   emailStatus       String?
   linkedin          String?
   phoneNumber       String?
   address           String?
-  company           String?
   companyAddress    String?
   department        String?
   position          String?
@@ -170,7 +166,8 @@ model Footprint {
   id            Int              @id @default(autoincrement())
   action        FootprintAction
   element       FootprintElement
-  description   String //
+  actionDetail  String? //
+  deviceUsed    String? // e.g., Laptop, Smartphone
   priorityLevel PriorityLevel
   intentScore   Float            @default(0)
   confidence    Float            @default(0)

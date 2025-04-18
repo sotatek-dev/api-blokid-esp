@@ -7,6 +7,7 @@ import { DatabaseService } from 'src/modules/base/database';
 import {
   CreateExecutivePersonBodyDto,
   GetExecutivePersonDepartmentQueryDto,
+  GetExecutivePersonDetailResponseDto,
   GetExecutivePersonListQueryDto,
   GetExecutivePersonPositionQueryDto,
   UpdateExecutivePersonBodyDto,
@@ -59,14 +60,27 @@ export class ExecutivePersonService {
     return { data, pagination: { page, pageSize, total, totalPages } };
   }
 
-  async getExecutivePersonDetail(id: number) {
+  async getExecutivePersonDetail(
+    id: number,
+  ): Promise<GetExecutivePersonDetailResponseDto> {
     const executivePerson = await this.databaseService.executivePerson.findFirst({
       where: { id },
     });
     if (!executivePerson) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return executivePerson;
+    const enrichment = await this.databaseService.personEnrichment.findFirst({
+      where: { executivePersonId: id },
+      select: {
+        position: true,
+        linkedin: true,
+        companyName: true,
+        companyAddress: true,
+        gender: true,
+      },
+    });
+
+    return { ...executivePerson, ...enrichment };
   }
 
   async updateExecutivePerson(id: number, body: UpdateExecutivePersonBodyDto) {
@@ -93,7 +107,7 @@ export class ExecutivePersonService {
   }
 
   async getExecutivePersonDepartment(query: GetExecutivePersonDepartmentQueryDto) {
-    const departments = await this.databaseService.executivePerson.findMany({
+    const departments = await this.databaseService.personEnrichment.findMany({
       where: {
         ...(query.search && { department: { contains: query.search } }),
       },
@@ -108,7 +122,7 @@ export class ExecutivePersonService {
   }
 
   async getExecutivePersonPosition(query: GetExecutivePersonPositionQueryDto) {
-    const positions = await this.databaseService.executivePerson.findMany({
+    const positions = await this.databaseService.personEnrichment.findMany({
       where: {
         ...(query.search && { position: { contains: query.search } }),
       },

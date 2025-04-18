@@ -204,7 +204,6 @@ export class ExecutiveUploadService {
         email: row[EXECUTIVE_COLUMN_POSITION.email],
         phoneNumber: row[EXECUTIVE_COLUMN_POSITION.phoneNumber],
         linkedinProfileUrl: row[EXECUTIVE_COLUMN_POSITION.linkedIn],
-        position: row[EXECUTIVE_COLUMN_POSITION.position],
         executiveUploadId: upload.id,
         executiveCompanyId: upload.ExecutiveCompany.id,
       });
@@ -269,61 +268,87 @@ export class ExecutiveUploadService {
         },
       };
     });
-    const enrichmentResponses =
-      await this.peopleDataLabService.bulkPersonEnrichment(enrichParams);
-    ServerLogger.info({
-      message: 'Enrichment responses',
-      context: `ExecutiveUploadService.enrichExecutiveUpload`,
-      meta: {
-        enrichParams,
-        enrichmentResponses,
-      },
-    });
-    await this.databaseService.enrichmentRaw.create({
+
+    const enrichmentRaw = await this.databaseService.enrichmentRaw.create({
       data: {
         request: enrichParams as object,
-        response: enrichmentResponses as object,
         type: EnrichmentType.Person,
       },
     });
+    await this.databaseService.executivePerson.updateMany({
+      where: { executiveUploadId: upload.id },
+      data: { enrichmentStatus: EnrichmentStatus.InProgress },
+    });
 
-    const enrichedData: Prisma.PersonEnrichmentCreateManyInput[] = [];
-    const enrichSuccessIds: number[] = [];
-    const enrichFailIds: number[] = [];
-    _.forEach(enrichmentResponses, (response) => {
-      const personId = _.get(response, 'metadata.executivePersonId');
-      const enrichData = response.data;
-      enrichedData.push({
-        executivePersonId: personId,
-        fullName: _.get(enrichData, 'full_name'),
-        email: _.get(enrichData, 'email'),
-        position: _.get(enrichData, 'job_title'),
-        linkedin: _.get(enrichData, 'linkedin'),
-        companyName: _.get(enrichData, 'company_name'),
-        companyAddress: _.get(enrichData, 'job_company_location_name'),
+    this.peopleDataLabService
+      .bulkPersonEnrichment(enrichParams)
+      .then(async (enrichmentResponses) => {
+        ServerLogger.info({
+          message: 'Enrichment responses',
+          context: `ExecutiveUploadService.enrichExecutiveUpload`,
+          meta: {
+            enrichParams,
+            enrichmentResponses,
+          },
+        });
+        await this.databaseService.enrichmentRaw.update({
+          where: { id: enrichmentRaw.id },
+          data: { response: enrichmentResponses as object },
+        });
+
+        const enrichedData: Prisma.PersonEnrichmentCreateManyInput[] = [];
+        const enrichSuccessIds: number[] = [];
+        const enrichFailIds: number[] = [];
+        _.forEach(enrichmentResponses, (response) => {
+          const personId = _.get(response, 'metadata.executivePersonId');
+          const enrichData = response.data;
+          enrichedData.push({
+            executivePersonId: personId,
+            fullName: _.get(enrichData, 'full_name'),
+            email: _.get(enrichData, 'email'),
+            position: _.get(enrichData, 'job_title'),
+            linkedin: _.get(enrichData, 'linkedin'),
+            companyName: _.get(enrichData, 'company_name'),
+            companyAddress: _.get(enrichData, 'job_company_location_name'),
+            gender: _.get(enrichData, 'sex'),
+            // phoneNumber: _.get(enrichData, 'phone_numbers'),
+            // address: _.get(enrichData, 'street_address'),
+          });
+          if (response.status === HttpStatus.OK) {
+            enrichSuccessIds.push(personId);
+          } else {
+            enrichFailIds.push(personId);
+          }
+        });
+
+        await this.databaseService.personEnrichment.createMany({
+          data: enrichedData,
+        });
+        await this.databaseService.executivePerson.updateMany({
+          where: { id: { in: enrichSuccessIds } },
+          data: { enrichmentStatus: EnrichmentStatus.Completed },
+        });
+        await this.databaseService.executivePerson.updateMany({
+          where: { id: { in: enrichFailIds } },
+          data: { enrichmentStatus: EnrichmentStatus.Failed },
+        });
+      })
+      .catch(async (error) => {
+        ServerLogger.error({
+          error,
+          message: 'Enrichment error',
+          context: `ExecutiveUploadService.enrichExecutiveUpload`,
+        });
+        await this.databaseService.enrichmentRaw.update({
+          where: { id: enrichmentRaw.id },
+          data: { response: error as object },
+        });
+        await this.databaseService.executivePerson.updateMany({
+          where: { executiveUploadId: upload.id },
+          data: { enrichmentStatus: EnrichmentStatus.Failed },
+        });
       });
-      if (response.status === HttpStatus.OK) {
-        enrichSuccessIds.push(personId);
-      } else {
-        enrichFailIds.push(personId);
-      }
-    });
 
-    await this.databaseService.personEnrichment.createMany({
-      data: enrichedData,
-    });
-    await this.databaseService.executivePerson.updateMany({
-      where: { id: { in: enrichSuccessIds } },
-      data: { enrichmentStatus: EnrichmentStatus.Completed },
-    });
-    await this.databaseService.executivePerson.updateMany({
-      where: { id: { in: enrichFailIds } },
-      data: { enrichmentStatus: EnrichmentStatus.Failed },
-    });
-
-    return {
-      enrichSuccess: enrichSuccessIds.length,
-      enrichFail: enrichFailIds.length,
-    };
+    return { inProgress: executives.length };
   }
 }

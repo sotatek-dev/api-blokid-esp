@@ -29,12 +29,6 @@ export class BaseExecutivePersonResponseDto {
   phoneNumber: string;
 
   @PropertyDto()
-  position: string;
-
-  @PropertyDto()
-  department: string;
-
-  @PropertyDto()
   enrichmentStatus: EnrichmentStatus;
 
   @PropertyDto()
@@ -46,7 +40,20 @@ export class BaseExecutivePersonResponseDto {
 
 // ****************************** GET ExecutivePerson dto ******************************
 export class GetExecutivePersonDetailResponseDto extends BaseExecutivePersonResponseDto {
-  // Add more fields if needed such as relations
+  @PropertyDto()
+  position?: string;
+
+  @PropertyDto()
+  linkedin?: string;
+
+  @PropertyDto()
+  companyName?: string;
+
+  @PropertyDto()
+  companyAddress?: string;
+
+  @PropertyDto()
+  gender?: string;
 }
 
 export class GetExecutivePersonListResponseDto extends BaseExecutivePersonResponseDto {
@@ -160,20 +167,6 @@ export class CreateExecutivePersonBodyDto {
     validated: true,
   })
   phoneNumber: string;
-
-  @PropertyDto({
-    type: String,
-    required: false,
-    validated: true,
-  })
-  position: string;
-
-  @PropertyDto({
-    type: String,
-    required: false,
-    validated: true,
-  })
-  department: string;
 
   @PropertyDto({
     type: Number,
