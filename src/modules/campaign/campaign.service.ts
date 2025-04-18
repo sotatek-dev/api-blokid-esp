@@ -9,7 +9,6 @@ import { DatabaseService } from 'src/modules/base/database';
 import { CampaignBuilderStep } from 'src/modules/campaign/campaign.enum';
 import {
   CreateCampaignBodyDto,
-  CreateCampaignQueryDto,
   CreateCampaignRequestDto,
   CreateCampaignStrategyDto,
   GetCampaignListQueryDto,
@@ -21,30 +20,40 @@ export class CampaignService {
   constructor(private databaseService: DatabaseService) {}
 
   async createCampaign(body: CreateCampaignRequestDto) {
-    // await this.databaseService.campaignMetric.create({
-    //   data: {
-    //     spend: 8000,
-    //     account: 1,
-    //     impressions: 100000,
-    //     avgTimeOnSite: 20,
-    //     performance: {
-    //       allChannels: {
-    //         spend: 8000,
-    //         remaining: 2000,
-    //       }
-    //     }
-    //   }
-    // });
-    // const { step, validateOnly } = body;
-    // await this.validateStep(
-    //     body,
-    //     step,
-    //     validateOnly
-    // );
-    //
-    // return this.databaseService.campaign.create({
-    //   data: { ...body },
-    // });
+    const { step, campaignStrategies, ...rest } = body;
+
+    if (step !== CampaignBuilderStep.PREVIEW) {
+      return 'validated ok';
+    }
+
+    return this.databaseService.$transaction(async (prisma) => {
+      const campaignMetric = await prisma.campaignMetric.create({
+        data: {
+          spend: 8000,
+          account: 1,
+          impressions: 100000,
+          avgTimeOnSite: 20,
+          performance: {
+            allChannels: {
+              spend: 8000,
+              remaining: 2000,
+            },
+          },
+        },
+      });
+
+      const campaign = await prisma.campaign.create({
+        data: { ...rest, campaignMetricId: campaignMetric.id },
+      });
+
+      // campaignStrategies.map((item) => {
+      //   return this.databaseService.campaignStrategy.create({
+      //     data: { ...item, campaignId: campaign.id },
+      //   });
+      // })
+
+      return campaign;
+    });
   }
 
   async getCampaignList(query: GetCampaignListQueryDto) {

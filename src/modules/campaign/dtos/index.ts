@@ -7,10 +7,10 @@ import {
   StrategyAdFormat,
 } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
-import { Type } from 'class-transformer';
+import { Exclude, Transform, Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
-  IsDefined,
+  IsBoolean,
   IsNotEmpty,
   ValidateIf,
   ValidateNested,
@@ -231,14 +231,21 @@ export class GetCampaignListQueryDto extends PaginationQueryDto {
 
 // ****************************** CREATE Campaign dto ******************************
 // todo: delete this line if you have corrected the dto
-export class CreateCampaignStrategyDto {
+export class ValidateCampaignStrategyDto {
+  @Exclude() // This ensures it's not included in serialized output
+  step?: number;
+
+  // Add a hidden isBudgetByChannel property
+  @Exclude()
+  isBudgetByChannel?: boolean;
+
   @PropertyDto({
     type: CampaignStrategyChannel,
     required: true,
     validated: true,
     structure: 'enum',
   })
-  // @ValidateIf(obj => obj.step === PREVIEW)
+  @ValidateIf((obj) => [STRATEGY, PREVIEW].includes(obj.step))
   channel: string;
 
   @PropertyDto({
@@ -247,6 +254,7 @@ export class CreateCampaignStrategyDto {
     validated: true,
     structure: 'enum',
   })
+  @ValidateIf((obj) => [STRATEGY, PREVIEW].includes(obj.step))
   format: string;
 
   @PropertyDto({
@@ -254,6 +262,7 @@ export class CreateCampaignStrategyDto {
     required: true,
     validated: true,
   })
+  @ValidateIf((obj) => [STRATEGY, PREVIEW].includes(obj.step))
   creativeLink: string;
 
   @PropertyDto({
@@ -261,6 +270,7 @@ export class CreateCampaignStrategyDto {
     required: true,
     validated: true,
   })
+  @ValidateIf((obj) => [STRATEGY, PREVIEW].includes(obj.step))
   content: string;
 
   @PropertyDto({
@@ -268,24 +278,10 @@ export class CreateCampaignStrategyDto {
     required: true,
     validated: true,
   })
+  @ValidateIf(
+    (obj) => [BUDGET, PREVIEW].includes(obj.step) && obj.isBudgetByChannel === true,
+  )
   budget: number;
-}
-
-export class CreateCampaignQueryDto {
-  @PropertyDto({
-    type: CampaignBuilderStep,
-    required: true,
-    validated: true,
-    structure: 'enum',
-  })
-  step: number;
-
-  @PropertyDto({
-    type: Boolean,
-    required: false,
-    validated: true,
-  })
-  validateOnly: boolean;
 }
 
 export class CreateCampaignRequestDto {
@@ -319,6 +315,7 @@ export class CreateCampaignRequestDto {
     required: true,
     validated: true,
   })
+  @Type(() => Date)
   @ValidateIf((obj) => [INFORMATION, PREVIEW].includes(obj.step))
   startDate: Date;
 
@@ -327,6 +324,7 @@ export class CreateCampaignRequestDto {
     required: true,
     validated: true,
   })
+  @Type(() => Date)
   @ValidateIf((obj) => [INFORMATION, PREVIEW].includes(obj.step))
   endDate: Date;
 
@@ -361,11 +359,13 @@ export class CreateCampaignRequestDto {
   @ValidateIf((obj) => [TARGET, PREVIEW].includes(obj.step))
   targetCompanyId: number;
 
-  @PropertyDto({
-    type: Boolean,
-    required: true,
-    validated: true,
-  })
+  // @PropertyDto({
+  //   type: Boolean,
+  //   required: true,
+  //   validated: true,
+  // })
+  @IsBoolean()
+  @IsNotEmpty()
   @ValidateIf((obj) => [BUDGET, PREVIEW].includes(obj.step))
   isBugdetByChannel: boolean;
 
@@ -379,58 +379,75 @@ export class CreateCampaignRequestDto {
 
   @PropertyDto({
     type: Number,
-    required: true,
+    required: false,
     validated: true,
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
+  @Transform(({ obj, value }) => value ?? 0)
   spend: number;
 
   @PropertyDto({
     type: Number,
-    required: true,
+    required: false,
     validated: true,
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
+  @Transform(({ obj, value }) => value ?? obj.budget)
   remaining: number;
 
   @PropertyDto({
     type: Number,
-    required: true,
+    required: false,
     validated: true,
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
+  @Transform(({ obj, value }) => value ?? 0)
   reached: number;
 
   @PropertyDto({
     type: CampaignStatus,
-    required: true,
-    validated: false,
+    required: false,
+    validated: true,
     structure: 'enum',
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
+  @Transform(({ obj, value }) => value ?? CampaignStatus.Active)
   status: CampaignStatus;
 
   @PropertyDto({
-    type: CreateCampaignStrategyDto,
+    type: ValidateCampaignStrategyDto,
     required: true,
     validated: true,
     structure: 'array',
   })
   @ArrayNotEmpty({ message: 'campaignStrategies should not be empty' })
   @ValidateNested({ each: true })
-  @Type(() => CreateCampaignStrategyDto)
+  @Type(() => ValidateCampaignStrategyDto)
   @ValidateIf((obj) => [STRATEGY, BUDGET, PREVIEW].includes(obj.step))
-  campaignStrategies: CreateCampaignStrategyDto[];
+  @Transform(({ value, obj }) => {
+    if (Array.isArray(value)) {
+      return value.map((strategy) => {
+        // Pass parent context to each strategy
+        strategy.step = obj.step;
+        strategy.isBudgetByChannel = obj.isBugdetByChannel;
+        return strategy;
+      });
+    }
+    return value;
+  })
+  campaignStrategies: ValidateCampaignStrategyDto[];
 }
+
+export class CreateCampaignStrategyDto extends OmitType(CreateCampaignRequestDto, [
+  'step',
+  'isBugdetByChannel',
+] as const) {}
 
 export class CreateCampaignBodyDto extends OmitType(CreateCampaignRequestDto, [
   'step',
+  'campaignStrategies',
 ] as const) {
-  @PropertyDto({
-    type: Number,
-    required: true,
-    validated: true,
-  })
+  @PropertyDto()
   campaignMetricId: number;
 }
 
