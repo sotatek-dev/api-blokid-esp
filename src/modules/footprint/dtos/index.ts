@@ -22,7 +22,7 @@ export class BaseFootprintResponseDto {
   deviceUsed: string;
 
   @PropertyDto()
-  priorityLevel: PriorityLevel;
+  priorityLevel?: PriorityLevel;
 
   @PropertyDto()
   intentScore: number;
@@ -31,7 +31,7 @@ export class BaseFootprintResponseDto {
   confidence: number;
 
   @PropertyDto()
-  personId: number;
+  personId?: number;
 
   @PropertyDto()
   createdAt: Date;

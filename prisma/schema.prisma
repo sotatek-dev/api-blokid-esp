@@ -168,15 +168,15 @@ model Footprint {
   element       FootprintElement
   actionDetail  String? //
   deviceUsed    String? // e.g., Laptop, Smartphone
-  priorityLevel PriorityLevel
+  priorityLevel PriorityLevel?
   intentScore   Float            @default(0)
   confidence    Float            @default(0)
-  personId      Int
+  personId      Int?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   deletedAt     DateTime?
 
-  ExecutivePerson ExecutivePerson @relation(fields: [personId], references: [id])
+  ExecutivePerson ExecutivePerson? @relation(fields: [personId], references: [id])
 }
 
 model IdentifyResolution {
@@ -319,6 +319,9 @@ enum FootprintElement {
   Form
   Page
   Content
+  Image
+  Cart
+  SocialMedia
 }
 
 enum CampaignStatus {

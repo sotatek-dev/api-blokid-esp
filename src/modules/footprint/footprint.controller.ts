@@ -69,6 +69,23 @@ export class FootprintController {
     return this.footprintService.getFootprintList(query);
   }
 
+  @Get('fake')
+  @SwaggerApiDocument({
+    response: {
+      type: GetFootprintListResponseDto,
+      isPagination: true,
+    },
+    operation: {
+      operationId: `getFootprintFake`,
+      summary: `Api getFootprintFake`,
+    },
+  })
+  async getFootprintFake(
+    @Query() query: GetFootprintListQueryDto,
+  ): Promise<PaginationResponseDto<GetFootprintListResponseDto>> {
+    return this.footprintService.getFootprintFake(query);
+  }
+
   @Get(':id')
   @SwaggerApiDocument({
     response: {
