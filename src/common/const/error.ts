@@ -126,6 +126,16 @@ export const ERROR_RESPONSE = {
     errorCode: 24,
     message: `Invalid files`,
   },
+  INTEGRATION_SERVICE_ERROR: {
+    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    errorCode: 25,
+    message: `Integration service error`,
+  },
+  MICROSERVICES_ERROR: {
+    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    errorCode: 26,
+    message: `Microservice error`,
+  },
   /*------------------------------ Defined ERROR below ------------------------------*/
 };
 

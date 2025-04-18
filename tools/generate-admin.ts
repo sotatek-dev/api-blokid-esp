@@ -46,7 +46,7 @@ export class GenerateAdmin extends CommandRunner {
         Business: {
           create: {
             name: 'Sotatek',
-            TargetCompany: {
+            ExecutiveCompany: {
               create: { name: `Westpac`, geography: `Australia` },
             },
           },

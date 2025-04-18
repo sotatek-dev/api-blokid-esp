@@ -84,6 +84,20 @@ export class ServerConfig {
     return _.assignWith(config, DEFAULT_SERVER_CONFIG, ServerConfig.assignCustomizer);
   }
 
+  private static validateEnvironmentVariables() {
+    const configSchema = Joi.object({
+      NODE_ENV: Joi.string()
+        .required()
+        .valid(...Object.values(NODE_ENV)),
+      DATABASE_URL: Joi.string().required(),
+      // PEOPLE_DATA_LAB_API_KEY: Joi.string().required(),
+    }).unknown();
+    const { error } = configSchema.validate(process.env);
+    if (error) {
+      throw new ValidationError(`Validate environment variable fail`, error.details);
+    }
+  }
+
   /**
    * Customizer function for the `_.assignWith` method from lodash.
    * This function is used to merge the default server configuration with the server configuration.
@@ -124,19 +138,6 @@ export class ServerConfig {
   private static readPackageJsonFile() {
     const filepath = path.join(__dirname, '../package.json');
     this.packageJson = fs.readJsonSync(filepath);
-  }
-
-  private static validateEnvironmentVariables() {
-    const configSchema = Joi.object({
-      NODE_ENV: Joi.string()
-        .required()
-        .valid(...Object.values(NODE_ENV)),
-      DATABASE_URL: Joi.string().required(),
-    }).unknown();
-    const { error } = configSchema.validate(process.env);
-    if (error) {
-      throw new ValidationError(`Validate environment variable fail`, error.details);
-    }
   }
 
   private static dontAllowArrayContainObject() {

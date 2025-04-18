@@ -62,8 +62,8 @@ model Business {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  TargetCompany ExecutiveCompany[]
-  User          User               @relation(fields: [userId], references: [id])
+  ExecutiveCompany ExecutiveCompany[]
+  User             User               @relation(fields: [userId], references: [id])
 }
 
 model ExecutiveCompany {
@@ -75,96 +75,108 @@ model ExecutiveCompany {
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
 
-  Campaign Campaign[]
-  Business Business?  @relation(fields: [businessId], references: [id])
+  Campaign        Campaign[]
+  Business        Business?         @relation(fields: [businessId], references: [id])
+  ExecutiveUpload ExecutiveUpload[]
+  ExecutivePerson ExecutivePerson[]
+  EnrichmentRaw   EnrichmentRaw[]
 }
 
 model ExecutiveUpload {
-  id          Int       @id @default(autoincrement())
-  fileName    String
-  quantity    Int
-  storageLink String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id                 Int       @id @default(autoincrement())
+  fileName           String
+  filePath           String
+  quantity           Int
+  storageLink        String?
+  isSaved            Boolean   @default(false)
+  isEnriched         Boolean   @default(false)
+  // type ExecutiveUploadType // person or company
+  executiveCompanyId Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  ExecutiveCompany ExecutiveCompany  @relation(fields: [executiveCompanyId], references: [id])
+  ExecutivePerson  ExecutivePerson[]
 }
 
 // Personal who created by target upload (csv)
 model ExecutivePerson {
   id                 Int              @id @default(autoincrement())
-  firstName          String?
-  lastName           String?
-  fullName           String?
+  firstName          String
+  lastName           String
+  fullName           String
   linkedinProfileUrl String?
-  email              String?
+  email              String
   phoneNumber        String?
-  position           String?
-  department         String?
+  executiveCompanyId Int
+  executiveUploadId  Int?
   enrichmentStatus   EnrichmentStatus @default(NoEnrichment)
-  intentScore        Float?
-  targetCompanyId    Int?
+  intentScore        Float            @default(0)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
   deletedAt          DateTime?
 
   Footprint          Footprint[]
   Enrichment         PersonEnrichment[]
-  EnrichmentRaw      EnrichmentRaw[]
   IdentifyResolution IdentifyResolution[]
+  ExecutiveCompany   ExecutiveCompany     @relation(fields: [executiveCompanyId], references: [id])
+  ExecutiveUpload    ExecutiveUpload?     @relation(fields: [executiveUploadId], references: [id])
+
+  @@unique([email, fullName, executiveCompanyId])
 }
 
 model PersonEnrichment {
-  id             Int       @id @default(autoincrement())
-  fullName       String?
-  gender         String?
-  title          String?
-  email          String?
-  emailStatus    String?
-  linkedin       String?
-  phoneNumber    String?
-  address        String?
-  company        String?
-  department     String?
-  position       String?
-  companyName    String?
-  targetPersonId Int
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
+  id                Int       @id @default(autoincrement())
+  fullName          String?
+  gender            String?
+  email             String?
+  emailStatus       String?
+  linkedin          String?
+  phoneNumber       String?
+  address           String?
+  companyAddress    String?
+  department        String?
+  position          String?
+  companyName       String?
+  executivePersonId Int
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
-  TargetPerson ExecutivePerson @relation(fields: [targetPersonId], references: [id])
+  ExecutivePerson ExecutivePerson @relation(fields: [executivePersonId], references: [id])
 }
 
 // save enrichment data from peopledatalab
 // system read only
 model EnrichmentRaw {
-  id             Int            @id @default(autoincrement())
-  targetPersonId Int
-  targetList     Json
-  request        Json
-  response       Json?
-  type           EnrichmentType
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  deletedAt      DateTime?
+  id                 Int            @id @default(autoincrement())
+  executiveCompanyId Int?
+  request            Json
+  response           Json?
+  type               EnrichmentType
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
 
-  TargetPerson ExecutivePerson? @relation(fields: [targetPersonId], references: [id])
+  ExecutiveCompany ExecutiveCompany? @relation(fields: [executiveCompanyId], references: [id])
 }
 
 model Footprint {
   id            Int              @id @default(autoincrement())
   action        FootprintAction
   element       FootprintElement
-  description   String //
-  priorityLevel PriorityLevel
-  intentScore   Float?
-  confidence    Float?
-  personId      Int
+  actionDetail  String? //
+  deviceUsed    String? // e.g., Laptop, Smartphone
+  priorityLevel PriorityLevel?
+  intentScore   Float            @default(0)
+  confidence    Float            @default(0)
+  personId      Int?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   deletedAt     DateTime?
 
-  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
+  ExecutivePerson ExecutivePerson? @relation(fields: [personId], references: [id])
 }
 
 model IdentifyResolution {
@@ -175,37 +187,37 @@ model IdentifyResolution {
   ip                String?
   uid               String?
   deviceFingerprint String?
-  confidence        Float?
+  confidence        Float     @default(0)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
 
-  TargetPerson ExecutivePerson @relation(fields: [personId], references: [id])
+  ExecutivePerson ExecutivePerson @relation(fields: [personId], references: [id])
 }
 
 model Campaign {
-  id                Int              @id @default(autoincrement())
-  campaignName      String
-  budget            Float?
-  spend             Float?
-  remaining         Float
-  reached           Float // percentage
-  startDate         DateTime
-  endDate           DateTime?
-  status            CampaignStatus
-  objective         CampainObjective
-  description       String?
-  geography         Json // string[]
-  role              Json // string[]
-  targetCompanyId   Int
-  campaignMetricId  Int              @unique
-  isBugdetByChannel Boolean          @default(false) // maybe enum
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
+  id                 Int              @id @default(autoincrement())
+  campaignName       String
+  budget             Float
+  spend              Float            @default(0)
+  remaining          Float
+  reached            Float            @default(0) // percentage
+  startDate          DateTime
+  endDate            DateTime?
+  status             CampaignStatus
+  objective          CampainObjective
+  description        String?
+  geography          Json // string[]
+  role               Json // string[]
+  executiveCompanyId Int
+  campaignMetricId   Int              @unique
+  isBugdetByChannel  Boolean          @default(false) // maybe enum
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
 
   CampaignMetric   CampaignMetric     @relation(fields: [campaignMetricId], references: [id])
-  TargetCompany    ExecutiveCompany   @relation(fields: [targetCompanyId], references: [id])
+  ExecutiveCompany ExecutiveCompany   @relation(fields: [executiveCompanyId], references: [id])
   CampaignStrategy CampaignStrategy[]
 }
 
@@ -307,6 +319,9 @@ enum FootprintElement {
   Form
   Page
   Content
+  Image
+  Cart
+  SocialMedia
 }
 
 enum CampaignStatus {
