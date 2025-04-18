@@ -12,6 +12,7 @@ services:
     volumes:
       - ./logs:/api-blokid/logs
       - ./database-backups:/api-blokid/prisma/backups
+      - ./uploads:/api-blokid/uploads
     networks:
       - blokid-network
 

@@ -33,6 +33,8 @@ const MAIN_CONFIG = {
   BACKUP_PATH: process.env.DISK_STORAGE_PATH,
   // Prisma
   PRISMA_LOG_LEVEL: process.env.PRISMA_LOG_LEVEL?.split(','),
+  // integrations
+  PEOPLE_DATA_LAB_API_KEY: process.env.PEOPLE_DATA_LAB_API_KEY,
 };
 
 Object.seal(MAIN_CONFIG);

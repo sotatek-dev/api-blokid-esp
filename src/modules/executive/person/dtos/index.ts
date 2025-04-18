@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { EnrichmentStatus } from '@prisma/client';
-import { MulterFile } from 'src/core/platform';
+import { IsEmail } from 'class-validator';
 import { PaginationQueryDto } from 'src/core/platform/dtos';
 import { PropertyDto } from 'src/decorators';
 
@@ -29,19 +29,10 @@ export class BaseExecutivePersonResponseDto {
   phoneNumber: string;
 
   @PropertyDto()
-  position: string;
-
-  @PropertyDto()
-  department: string;
-
-  @PropertyDto()
   enrichmentStatus: EnrichmentStatus;
 
   @PropertyDto()
   intentScore: number;
-
-  @PropertyDto()
-  targetCompanyId: number;
 
   @PropertyDto()
   createdAt: Date;
@@ -49,7 +40,20 @@ export class BaseExecutivePersonResponseDto {
 
 // ****************************** GET ExecutivePerson dto ******************************
 export class GetExecutivePersonDetailResponseDto extends BaseExecutivePersonResponseDto {
-  // Add more fields if needed such as relations
+  @PropertyDto()
+  position?: string;
+
+  @PropertyDto()
+  linkedin?: string;
+
+  @PropertyDto()
+  companyName?: string;
+
+  @PropertyDto()
+  companyAddress?: string;
+
+  @PropertyDto()
+  gender?: string;
 }
 
 export class GetExecutivePersonListResponseDto extends BaseExecutivePersonResponseDto {
@@ -109,7 +113,7 @@ export class GetExecutivePersonListQueryDto extends PaginationQueryDto {
     required: false,
     validated: true,
   })
-  targetCompanyId: number;
+  executiveCompanyId: number;
 
   @PropertyDto({
     type: Date,
@@ -144,16 +148,17 @@ export class CreateExecutivePersonBodyDto {
 
   @PropertyDto({
     type: String,
-    required: true,
+    required: false,
     validated: true,
   })
   linkedinProfileUrl: string;
 
   @PropertyDto({
     type: String,
-    required: false,
+    required: true,
     validated: true,
   })
+  @IsEmail()
   email: string;
 
   @PropertyDto({
@@ -164,25 +169,27 @@ export class CreateExecutivePersonBodyDto {
   phoneNumber: string;
 
   @PropertyDto({
-    type: String,
+    type: Number,
     required: false,
     validated: true,
+    example: 1,
   })
-  position: string;
+  executiveCompanyId: number;
 
   @PropertyDto({
-    type: String,
+    type: EnrichmentStatus,
     required: false,
     validated: true,
+    structure: 'enum',
   })
-  department: string;
+  enrichmentStatus: EnrichmentStatus;
 
   @PropertyDto({
     type: Number,
     required: false,
     validated: true,
   })
-  targetCompanyId: number;
+  intentScore: number;
 }
 
 export class CreateExecutivePersonResponseDto extends BaseExecutivePersonResponseDto {}
@@ -196,42 +203,33 @@ export class UpdateExecutivePersonBodyDto extends PartialType(
 
 export class UpdateExecutivePersonResponseDto extends BaseExecutivePersonResponseDto {}
 
-// ****************************** uploadExecutive ******************************
+// ****************************** getExecutivePersonDepartment ******************************
 
-export class UploadExecutiveResponseDto {}
-
-export class UploadExecutiveBodyDto {
-  @PropertyDto({
-    type: 'file',
-    required: true,
-    validated: true,
-  })
-  file: MulterFile;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
-  targetCompanyId: number;
+export class GetExecutivePersonDepartmentResponseDto {
+  @PropertyDto()
+  departments: string[];
 }
 
-// ****************************** enrichPeople ******************************
-
-export class EnrichPeopleResponseDto {}
-
-export class EnrichPeopleBodyDto {
+export class GetExecutivePersonDepartmentQueryDto {
   @PropertyDto({
-    type: [String],
-    required: true,
-    validated: true,
-  })
-  emails: string[];
-
-  @PropertyDto({
-    type: Number,
+    type: String,
     required: false,
     validated: true,
   })
-  targetCompanyId: number;
+  search: string;
+}
+
+// ****************************** getExecutivePersonPosition ******************************
+export class GetExecutivePersonPositionResponseDto {
+  @PropertyDto()
+  positions: string[];
+}
+
+export class GetExecutivePersonPositionQueryDto {
+  @PropertyDto({
+    type: String,
+    required: false,
+    validated: true,
+  })
+  search: string;
 }

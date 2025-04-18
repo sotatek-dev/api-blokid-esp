@@ -6,10 +6,11 @@ import { ServerException } from 'src/exceptions';
 import { DatabaseService } from 'src/modules/base/database';
 import {
   CreateExecutivePersonBodyDto,
-  EnrichPeopleBodyDto,
+  GetExecutivePersonDepartmentQueryDto,
+  GetExecutivePersonDetailResponseDto,
   GetExecutivePersonListQueryDto,
+  GetExecutivePersonPositionQueryDto,
   UpdateExecutivePersonBodyDto,
-  UploadExecutiveBodyDto,
 } from './dtos';
 
 @Injectable()
@@ -29,7 +30,7 @@ export class ExecutivePersonService {
       ...(query.name && { fullName: { contains: query.name } }),
       ...(query.department && { department: { contains: query.department } }),
       ...(query.enrichmentStatus && { enrichmentStatus: { in: query.enrichmentStatus } }),
-      ...(query.targetCompanyId && { targetCompanyId: query.targetCompanyId }),
+      ...(query.executiveCompanyId && { executiveCompanyId: query.executiveCompanyId }),
       ...(query.position && { position: { contains: query.position } }),
     };
     if (query.createdAtRangeStart || query.createdAtRangeEnd) {
@@ -59,14 +60,27 @@ export class ExecutivePersonService {
     return { data, pagination: { page, pageSize, total, totalPages } };
   }
 
-  async getExecutivePersonDetail(id: number) {
+  async getExecutivePersonDetail(
+    id: number,
+  ): Promise<GetExecutivePersonDetailResponseDto> {
     const executivePerson = await this.databaseService.executivePerson.findFirst({
       where: { id },
     });
     if (!executivePerson) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return executivePerson;
+    const enrichment = await this.databaseService.personEnrichment.findFirst({
+      where: { executivePersonId: id },
+      select: {
+        position: true,
+        linkedin: true,
+        companyName: true,
+        companyAddress: true,
+        gender: true,
+      },
+    });
+
+    return { ...executivePerson, ...enrichment };
   }
 
   async updateExecutivePerson(id: number, body: UpdateExecutivePersonBodyDto) {
@@ -92,11 +106,33 @@ export class ExecutivePersonService {
     return this.databaseService.executivePerson.delete({ where: { id } });
   }
 
-  uploadExecutive(body: UploadExecutiveBodyDto) {
-    return undefined;
+  async getExecutivePersonDepartment(query: GetExecutivePersonDepartmentQueryDto) {
+    const departments = await this.databaseService.personEnrichment.findMany({
+      where: {
+        ...(query.search && { department: { contains: query.search } }),
+      },
+      select: {
+        department: true,
+      },
+      distinct: ['department'],
+    });
+    return {
+      departments: departments.map((department) => department.department),
+    };
   }
 
-  enrichPeople(body: EnrichPeopleBodyDto) {
-    return undefined;
+  async getExecutivePersonPosition(query: GetExecutivePersonPositionQueryDto) {
+    const positions = await this.databaseService.personEnrichment.findMany({
+      where: {
+        ...(query.search && { position: { contains: query.search } }),
+      },
+      select: {
+        position: true,
+      },
+      distinct: ['position'],
+    });
+    return {
+      positions: positions.map((position) => position.position),
+    };
   }
 }
