@@ -1,5 +1,5 @@
-import * as moment from 'moment-timezone';
 import { MomentInput as TimeInput } from 'moment';
+import moment from 'moment-timezone';
 import { ServerConfig } from 'server-config/index';
 
 // no need to moment.tz.setDefault because it is already set in the server environment

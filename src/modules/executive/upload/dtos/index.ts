@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/swagger';
 import { MulterFile } from 'src/core/platform';
 import { PaginationQueryDto } from 'src/core/platform/dtos';
 import { PropertyDto } from 'src/decorators';
@@ -113,17 +112,6 @@ export class CreateExecutiveUploadBodyDto {
   targetCompanyId: number;
 }
 
-export class CreateExecutiveUploadQueryDto {
-  @PropertyDto({
-    type: Boolean,
-    required: false,
-    validated: true,
-    description: `Development only, ignore duplicate file`,
-    example: false,
-  })
-  ignoreDuplicate: boolean = false;
-}
-
 export class CreateExecutiveUploadResponseDto extends BaseExecutiveUploadResponseDto {}
 
 // ****************************** saveExecutiveUpload ******************************
@@ -150,4 +138,10 @@ export class EnrichExecutiveUploadBodyDto {
   id: number;
 }
 
-export class EnrichExecutiveUploadResponseDto {}
+export class EnrichExecutiveUploadResponseDto {
+  @PropertyDto()
+  enrichSuccess: number;
+
+  @PropertyDto()
+  enrichFail: number;
+}

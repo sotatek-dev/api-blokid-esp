@@ -25,7 +25,6 @@ import { AuthGuard } from 'src/guards';
 import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import {
   CreateExecutiveUploadBodyDto,
-  CreateExecutiveUploadQueryDto,
   CreateExecutiveUploadResponseDto,
   EnrichExecutiveUploadBodyDto,
   EnrichExecutiveUploadResponseDto,
@@ -72,10 +71,9 @@ export class ExecutiveUploadController {
   )
   async createExecutiveUpload(
     @UploadedFile() file: MulterFile,
-    @Query() query: CreateExecutiveUploadQueryDto,
     @Body() body: CreateExecutiveUploadBodyDto,
   ): Promise<CreateExecutiveUploadResponseDto> {
-    return this.executiveUploadService.createExecutiveUpload(query, { ...body, file });
+    return this.executiveUploadService.createExecutiveUpload({ ...body, file });
   }
 
   @Get()

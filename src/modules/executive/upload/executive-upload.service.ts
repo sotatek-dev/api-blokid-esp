@@ -1,19 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { EnrichmentStatus, EnrichmentType, Prisma } from '@prisma/client';
 import { isEmail, isEmpty, isURL } from 'class-validator';
+import { BulkPersonEnrichmentRequest } from 'peopledatalabs/dist/types/bulk-types';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { csvFileMimeTypes } from 'src/common/const/file.const';
 import { parseCsv } from 'src/common/helpers/csv';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { AsyncStorage } from 'src/core/async-storage';
 import { _ } from 'src/core/libs/lodash';
+import { ServerLogger } from 'src/core/logger';
 import { ServerException } from 'src/exceptions';
+import { PeopleDataLabService } from 'src/integrations/peopledatalab';
 import { DatabaseService } from 'src/modules/base/database';
 import { EXECUTIVE_CSV_HEADERS } from 'src/modules/executive/executive.const';
 import { EXECUTIVE_COLUMN_POSITION } from 'src/modules/executive/executive.types';
 import {
   CreateExecutiveUploadBodyDto,
-  CreateExecutiveUploadQueryDto,
   EnrichExecutiveUploadBodyDto,
   GetExecutiveUploadListQueryDto,
   SaveExecutiveUploadBodyDto,
@@ -23,13 +25,10 @@ import {
 export class ExecutiveUploadService {
   constructor(
     private readonly databaseService: DatabaseService,
-    // private readonly peopleDataLabService: PeopleDataLabService,
+    private readonly peopleDataLabService: PeopleDataLabService,
   ) {}
 
-  async createExecutiveUpload(
-    query: CreateExecutiveUploadQueryDto,
-    body: CreateExecutiveUploadBodyDto,
-  ) {
+  async createExecutiveUpload(body: CreateExecutiveUploadBodyDto) {
     const { file } = body;
 
     if (!file) {
@@ -57,6 +56,13 @@ export class ExecutiveUploadService {
         });
       }
     });
+    // check csv content
+    if (csvContent.length === 0) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.INVALID_FILES,
+        message: 'Invalid csv content. No data found',
+      });
+    }
     // validate csv content
     const conditions: Prisma.ExecutivePersonWhereInput[] = [];
     _.forEach(csvContent, (row) => {
@@ -87,15 +93,15 @@ export class ExecutiveUploadService {
     });
 
     // check for duplicated email and fullName, 10000 records = 5s
-    if (duplicated?.length > 0) {
-      throw new ServerException({
-        ...ERROR_RESPONSE.INVALID_FILES,
-        message: 'Invalid csv content. Duplicated email or fullName',
-        details: {
-          duplicated: duplicated.map(({ email, fullName }) => ({ email, fullName })),
-        },
-      });
-    }
+    // if (duplicated?.length > 0) {
+    //   throw new ServerException({
+    //     ...ERROR_RESPONSE.INVALID_FILES,
+    //     message: 'Invalid csv content. Duplicated email or fullName',
+    //     details: {
+    //       duplicated: duplicated.map(({ email, fullName }) => ({ email, fullName })),
+    //     },
+    //   });
+    // }
 
     // todo: only in MVP
     const userId = AsyncStorage.get('userId') as number;
@@ -220,9 +226,27 @@ export class ExecutiveUploadService {
       where: { id: body.id },
       include: { ExecutiveCompany: true },
     });
+
     if (!upload) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
+
+    // permission check
+    const userId = AsyncStorage.get('userId') as number;
+    const user = await this.databaseService.user.findFirst({
+      where: { id: userId },
+      include: { Business: true },
+    });
+    const executiveCompany = await this.databaseService.executiveCompany.findFirst({
+      where: { businessId: user.Business.id, id: upload.executiveCompanyId },
+    });
+    if (!executiveCompany) {
+      throw new ServerException({
+        ...ERROR_RESPONSE.FORBIDDEN_RESOURCE,
+        message: `You don't have permission to access this resource`,
+      });
+    }
+
     if (!upload.isSaved) {
       await this.saveExecutiveUpload({ id: upload.id });
     }
@@ -231,6 +255,75 @@ export class ExecutiveUploadService {
       where: { executiveUploadId: upload.id },
     });
 
-    return undefined;
+    const enrichParams: BulkPersonEnrichmentRequest[] = _.map(executives, (executive) => {
+      return {
+        params: {
+          name: executive.fullName,
+          email: executive.email,
+          profile: executive.linkedinProfileUrl,
+          phone: executive.phoneNumber,
+        },
+        metadata: {
+          executivePersonId: executive.id,
+          email: executive.email,
+        },
+      };
+    });
+    const enrichmentResponses =
+      await this.peopleDataLabService.bulkPersonEnrichment(enrichParams);
+    ServerLogger.info({
+      message: 'Enrichment responses',
+      context: `ExecutiveUploadService.enrichExecutiveUpload`,
+      meta: {
+        enrichParams,
+        enrichmentResponses,
+      },
+    });
+    await this.databaseService.enrichmentRaw.create({
+      data: {
+        request: enrichParams as object,
+        response: enrichmentResponses as object,
+        type: EnrichmentType.Person,
+      },
+    });
+
+    const enrichedData: Prisma.PersonEnrichmentCreateManyInput[] = [];
+    const enrichSuccessIds: number[] = [];
+    const enrichFailIds: number[] = [];
+    _.forEach(enrichmentResponses, (response) => {
+      const personId = _.get(response, 'metadata.executivePersonId');
+      const enrichData = response.data;
+      enrichedData.push({
+        executivePersonId: personId,
+        fullName: _.get(enrichData, 'full_name'),
+        email: _.get(enrichData, 'email'),
+        position: _.get(enrichData, 'job_title'),
+        linkedin: _.get(enrichData, 'linkedin'),
+        companyName: _.get(enrichData, 'company_name'),
+        companyAddress: _.get(enrichData, 'job_company_location_name'),
+      });
+      if (response.status === HttpStatus.OK) {
+        enrichSuccessIds.push(personId);
+      } else {
+        enrichFailIds.push(personId);
+      }
+    });
+
+    await this.databaseService.personEnrichment.createMany({
+      data: enrichedData,
+    });
+    await this.databaseService.executivePerson.updateMany({
+      where: { id: { in: enrichSuccessIds } },
+      data: { enrichmentStatus: EnrichmentStatus.Completed },
+    });
+    await this.databaseService.executivePerson.updateMany({
+      where: { id: { in: enrichFailIds } },
+      data: { enrichmentStatus: EnrichmentStatus.Failed },
+    });
+
+    return {
+      enrichSuccess: enrichSuccessIds.length,
+      enrichFail: enrichFailIds.length,
+    };
   }
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PeopleDataLabModule } from 'src/integrations/peopledatalab';
 import {
   ExecutiveUploadController,
   ExecutiveUploadService,
@@ -7,7 +8,7 @@ import { ExecutiveCompanyController, ExecutiveCompanyService } from './company';
 import { ExecutivePersonController, ExecutivePersonService } from './person';
 
 @Module({
-  imports: [],
+  imports: [PeopleDataLabModule],
   controllers: [
     ExecutivePersonController,
     ExecutiveCompanyController,

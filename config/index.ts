@@ -90,7 +90,7 @@ export class ServerConfig {
         .required()
         .valid(...Object.values(NODE_ENV)),
       DATABASE_URL: Joi.string().required(),
-      PEOPLE_DATA_LAB_API_KEY: Joi.string().required(),
+      // PEOPLE_DATA_LAB_API_KEY: Joi.string().required(),
     }).unknown();
     const { error } = configSchema.validate(process.env);
     if (error) {

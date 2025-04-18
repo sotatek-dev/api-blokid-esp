@@ -79,6 +79,7 @@ model ExecutiveCompany {
   Business        Business?         @relation(fields: [businessId], references: [id])
   ExecutiveUpload ExecutiveUpload[]
   ExecutivePerson ExecutivePerson[]
+  EnrichmentRaw   EnrichmentRaw[]
 }
 
 model ExecutiveUpload {
@@ -120,7 +121,6 @@ model ExecutivePerson {
 
   Footprint          Footprint[]
   Enrichment         PersonEnrichment[]
-  EnrichmentRaw      EnrichmentRaw[]
   IdentifyResolution IdentifyResolution[]
   ExecutiveCompany   ExecutiveCompany     @relation(fields: [executiveCompanyId], references: [id])
   ExecutiveUpload    ExecutiveUpload?     @relation(fields: [executiveUploadId], references: [id])
@@ -139,6 +139,7 @@ model PersonEnrichment {
   phoneNumber       String?
   address           String?
   company           String?
+  companyAddress    String?
   department        String?
   position          String?
   companyName       String?
@@ -153,17 +154,16 @@ model PersonEnrichment {
 // save enrichment data from peopledatalab
 // system read only
 model EnrichmentRaw {
-  id                Int            @id @default(autoincrement())
-  executivePersonId Int
-  executiveList     Json
-  request           Json
-  response          Json?
-  type              EnrichmentType
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  deletedAt         DateTime?
+  id                 Int            @id @default(autoincrement())
+  executiveCompanyId Int?
+  request            Json
+  response           Json?
+  type               EnrichmentType
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
 
-  ExecutivePerson ExecutivePerson? @relation(fields: [executivePersonId], references: [id])
+  ExecutiveCompany ExecutiveCompany? @relation(fields: [executiveCompanyId], references: [id])
 }
 
 model Footprint {
