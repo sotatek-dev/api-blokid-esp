@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { CampaignStatus, Prisma } from '@prisma/client';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { ServerException } from 'src/exceptions';
@@ -49,10 +49,6 @@ export class CampaignService {
 
       const campaign = await prisma.campaign.create({
         data: campaignData,
-        include: {
-          CampaignMetric: true,
-          ExecutiveCompany: true,
-        },
       });
 
       const campaignStrategiesData: CreateCampaignStrategyDto[] = campaignStrategies.map(
@@ -79,20 +75,9 @@ export class CampaignService {
     const { page, pageSize, take, skip } = validatePaginationQueryDto(query);
 
     const where: Prisma.CampaignWhereInput = {
-      ...(query.id && { id: query.id }),
-      ...(query.campaignName && { campaignName: query.campaignName }),
       ...(query.budget && { budget: query.budget }),
-      ...(query.spend && { spend: query.spend }),
       ...(query.remaining && { remaining: query.remaining }),
-      ...(query.reached && { reached: query.reached }),
       ...(query.status && { status: query.status }),
-      ...(query.objective && { objective: query.objective }),
-      ...(query.description && { description: query.description }),
-      ...(query.geography && { geography: query.geography }),
-      ...(query.role && { role: query.role }),
-      ...(query.executiveCompanyId && { executiveCompanyId: query.executiveCompanyId }),
-      ...(query.campaignMetricId && { campaignMetricId: query.campaignMetricId }),
-      ...(query.isBugdetByChannel && { isBugdetByChannel: query.isBugdetByChannel }),
     };
     if (query.startDateRangeStart || query.startDateRangeEnd) {
       where.startDate = {
@@ -106,12 +91,6 @@ export class CampaignService {
         lte: query.endDateRangeEnd,
       };
     }
-    if (query.createdAtRangeStart || query.createdAtRangeEnd) {
-      where.createdAt = {
-        gte: query.createdAtRangeStart,
-        lte: query.createdAtRangeEnd,
-      };
-    }
 
     const [data, total] = await Promise.all([
       this.databaseService.campaign.findMany({
@@ -119,6 +98,9 @@ export class CampaignService {
         take,
         skip,
         ...(query.lastItemId && { cursor: { id: query.lastItemId } }),
+        orderBy: {
+          createdAt: 'desc',
+        },
       }),
       this.databaseService.campaign.count({ where }),
     ]);
@@ -156,6 +138,10 @@ export class CampaignService {
     const campaign = await this.databaseService.campaign.findFirst({ where: { id } });
     if (!campaign) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
+    }
+
+    if (campaign.status === CampaignStatus.Pending) {
+      throw new ServerException(ERROR_RESPONSE.BAD_REQUEST);
     }
 
     return this.databaseService.$transaction(async (prisma) => {

@@ -327,6 +327,7 @@ enum FootprintElement {
 enum CampaignStatus {
   Active
   Suspended
+  Pending
   WaitingToLaunch
   Completed
   Paused

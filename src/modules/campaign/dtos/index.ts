@@ -92,20 +92,6 @@ export class GetCampaignListQueryDto extends PaginationQueryDto {
     required: false,
     validated: true,
   })
-  id: number;
-
-  @PropertyDto({
-    type: String,
-    required: false,
-    validated: true,
-  })
-  campaignName: string;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
   budget: number;
 
   @PropertyDto({
@@ -113,21 +99,7 @@ export class GetCampaignListQueryDto extends PaginationQueryDto {
     required: false,
     validated: true,
   })
-  spend: number;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
   remaining: number;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
-  reached: number;
 
   @PropertyDto({
     type: Date,
@@ -164,70 +136,6 @@ export class GetCampaignListQueryDto extends PaginationQueryDto {
     structure: 'enum',
   })
   status: CampaignStatus;
-
-  @PropertyDto({
-    type: CampainObjective,
-    required: false,
-    validated: true,
-    structure: 'enum',
-  })
-  objective: CampainObjective;
-
-  @PropertyDto({
-    type: String,
-    required: false,
-    validated: true,
-  })
-  description: string;
-
-  @PropertyDto({
-    type: Object,
-    required: false,
-    validated: true,
-  })
-  geography: object;
-
-  @PropertyDto({
-    type: Object,
-    required: false,
-    validated: true,
-  })
-  role: object;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
-  executiveCompanyId: number;
-
-  @PropertyDto({
-    type: Number,
-    required: false,
-    validated: true,
-  })
-  campaignMetricId: number;
-
-  @PropertyDto({
-    type: Boolean,
-    required: false,
-    validated: true,
-  })
-  isBugdetByChannel: boolean;
-
-  @PropertyDto({
-    type: Date,
-    required: false,
-    validated: true,
-  })
-  createdAtRangeStart: Date;
-
-  @PropertyDto({
-    type: Date,
-    required: false,
-    validated: true,
-  })
-  createdAtRangeEnd: Date;
 }
 
 // ****************************** CREATE Campaign dto ******************************
@@ -248,7 +156,7 @@ export class ValidateCampaignStrategyDto {
     structure: 'enum',
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
-  @Transform(({ obj, value }) => value ?? CampaignStatus.Active)
+  @Transform(({ obj, value }) => value ?? CampaignStatus.Pending)
   status: CampaignStatus;
 
   @PropertyDto({
@@ -418,7 +326,7 @@ export class CreateCampaignRequestDto {
     structure: 'enum',
   })
   @ValidateIf((obj) => obj.step === PREVIEW)
-  @Transform(({ obj, value }) => value ?? CampaignStatus.Active)
+  @Transform(({ obj, value }) => value ?? CampaignStatus.Pending)
   status: CampaignStatus;
 
   @PropertyDto({
