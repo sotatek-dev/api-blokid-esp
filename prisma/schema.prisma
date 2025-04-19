@@ -232,7 +232,7 @@ model CampaignStrategy {
   startDate        DateTime?
   finishDate       DateTime?
   campaignId       Int
-  campaignMetricId Int                     @unique
+  campaignMetricId Int
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
   deletedAt        DateTime?
@@ -253,7 +253,7 @@ model CampaignMetric {
   deletedAt     DateTime?
 
   Campaign         Campaign?
-  CampaignStrategy CampaignStrategy?
+  CampaignStrategy CampaignStrategy[]
 }
 
 // -------------------------------- Enums -------------------------------

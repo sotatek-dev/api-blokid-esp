@@ -1,7 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { plainToInstance } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
 import { ERROR_RESPONSE } from 'src/common/const';
 import { validatePaginationQueryDto } from 'src/common/helpers/request';
 import { ServerException } from 'src/exceptions';
@@ -23,7 +21,9 @@ export class CampaignService {
     const { step, campaignStrategies, ...rest } = body;
 
     if (step !== CampaignBuilderStep.PREVIEW) {
-      return 'validated ok';
+      return {
+        message: `Campaign data validated successfully`,
+      };
     }
 
     return this.databaseService.$transaction(async (prisma) => {
@@ -42,15 +42,34 @@ export class CampaignService {
         },
       });
 
+      const campaignData: CreateCampaignBodyDto = {
+        ...rest,
+        campaignMetricId: campaignMetric.id,
+      };
+
       const campaign = await prisma.campaign.create({
-        data: { ...rest, campaignMetricId: campaignMetric.id },
+        data: campaignData,
+        include: {
+          CampaignMetric: true,
+          ExecutiveCompany: true,
+        },
       });
 
-      // campaignStrategies.map((item) => {
-      //   return this.databaseService.campaignStrategy.create({
-      //     data: { ...item, campaignId: campaign.id },
-      //   });
-      // })
+      const campaignStrategiesData: CreateCampaignStrategyDto[] = campaignStrategies.map(
+        (strategy) => {
+          const { step, isBudgetByChannel, ...strategyData } = strategy;
+          return {
+            ...strategyData,
+            campaignId: campaign.id,
+            campaignMetricId: campaignMetric.id,
+          };
+        },
+      );
+
+      await prisma.campaignStrategy.createMany({
+        data: campaignStrategiesData,
+        skipDuplicates: false,
+      });
 
       return campaign;
     });
@@ -71,7 +90,7 @@ export class CampaignService {
       ...(query.description && { description: query.description }),
       ...(query.geography && { geography: query.geography }),
       ...(query.role && { role: query.role }),
-      ...(query.targetCompanyId && { targetCompanyId: query.targetCompanyId }),
+      ...(query.executiveCompanyId && { executiveCompanyId: query.executiveCompanyId }),
       ...(query.campaignMetricId && { campaignMetricId: query.campaignMetricId }),
       ...(query.isBugdetByChannel && { isBugdetByChannel: query.isBugdetByChannel }),
     };
@@ -109,7 +128,13 @@ export class CampaignService {
   }
 
   async getCampaignDetail(id: number) {
-    const campaign = await this.databaseService.campaign.findFirst({ where: { id } });
+    const campaign = await this.databaseService.campaign.findFirst({
+      where: { id },
+      include: {
+        CampaignMetric: true,
+        CampaignStrategy: true,
+      },
+    });
     if (!campaign) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
@@ -132,6 +157,19 @@ export class CampaignService {
     if (!campaign) {
       throw new ServerException(ERROR_RESPONSE.RESOURCE_NOT_FOUND);
     }
-    return this.databaseService.campaign.delete({ where: { id } });
+
+    return this.databaseService.$transaction(async (prisma) => {
+      await prisma.campaignStrategy.deleteMany({
+        where: { campaignId: id },
+      });
+
+      await prisma.campaign.delete({
+        where: { id },
+      });
+
+      await prisma.campaignMetric.delete({
+        where: { id: campaign.campaignMetricId },
+      });
+    });
   }
 }
