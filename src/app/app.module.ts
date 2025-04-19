@@ -12,6 +12,7 @@ import {
 } from 'src/middlewares';
 import { AuthModule } from 'src/modules/auth';
 import { BaseModule } from 'src/modules/base';
+import { CampaignModule } from 'src/modules/campaign';
 import { ExecutiveModule } from 'src/modules/executive';
 import { UserModule } from 'src/modules/user';
 import { AppController } from './app.controller';
@@ -31,6 +32,7 @@ import { TaskScheduleModule } from '../task-schedule/task-schedule.module';
     TaskScheduleModule,
     UserModule,
     ExecutiveModule,
+    CampaignModule,
   ],
   controllers: [AppController],
   providers: [AppService],
